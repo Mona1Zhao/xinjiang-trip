@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#E8833A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23E8833A'/%3E%3Cpath d='M5 24L13 10L18 18L22 13L28 24Z' fill='white'/%3E%3C/svg%3E">
 <title>北疆秋色 · 9日行助手</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -14,11 +15,12 @@
     color: #2D2A26;
     font-size: 15px;
     line-height: 1.55;
-    padding-bottom: 80px; /* tab bar 高度 */
+    padding-bottom: 80px;
     -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; text-decoration: none; }
-  button { font-family: inherit; }
+  button { font-family: inherit; cursor: pointer; }
+  .clickable { cursor: pointer; }
 
   /* ===== 启动页 ===== */
   #splash {
@@ -84,6 +86,7 @@
     padding: 6px 14px; border-radius: 999px;
     background: #fff; border: 1px solid #EFE5D6;
     font-size: 13px; color: #6B6459; white-space: nowrap;
+    cursor: pointer;
   }
   .cat-pill.active { background: #E8833A; color: #fff; border-color: #E8833A; }
 
@@ -95,13 +98,14 @@
   }
   .card.accent { border-left: 4px solid #E8833A; }
   .card h3 { margin: 0 0 10px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .card h3 .right { display: flex; align-items: center; gap: 8px; }
   .card h3 .count { font-size: 12px; color: #8A8378; font-weight: normal; }
-  .collapse-arrow { color: #B8A990; font-size: 12px; }
+  .del-cat { font-size: 12px; color: #D9CDB8; cursor: pointer; }
 
   /* ===== 集合信息 ===== */
   .meet-info p { margin: 6px 0; font-size: 14px; }
   .meet-info .label { color: #8A8378; margin-right: 4px; }
-  .jump-link { color: #E8833A; font-weight: 500; }
+  .jump-link { color: #E8833A; font-weight: 500; cursor: pointer; }
   .jump-link::after { content: " 📍"; font-size: 12px; }
 
   /* ===== 待办项 ===== */
@@ -110,6 +114,7 @@
     padding: 10px 0;
     border-bottom: 1px solid #F5EDE0;
     min-height: 44px;
+    cursor: pointer;
   }
   .todo-item:last-child { border-bottom: none; }
   .checkbox {
@@ -125,14 +130,23 @@
   }
   .todo-text { flex: 1; transition: all .2s; }
   .todo-item.done .todo-text { color: #B8A990; text-decoration: line-through; }
-
-  .add-row {
-    display: flex; gap: 8px; margin-top: 10px;
+  .del-item {
+    color: #D9CDB8; font-size: 20px; padding: 0 6px;
+    cursor: pointer; line-height: 1;
   }
+  .del-item:hover { color: #E8833A; }
+
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
   .add-row input {
     flex: 1; padding: 10px 12px;
     border: 1px solid #EFE5D6; border-radius: 10px;
     font-size: 14px; outline: none; background: #FDFAF5;
+  }
+  .add-row select {
+    padding: 10px 8px;
+    border: 1px solid #EFE5D6; border-radius: 10px;
+    font-size: 13px; background: #FDFAF5;
+    color: #6B6459;
   }
   .add-row button {
     padding: 0 16px; background: #E8833A; color: #fff;
@@ -157,19 +171,43 @@
     padding: 8px 14px; border-radius: 999px;
     background: #fff; border: 1.5px solid #EFE5D6;
     font-size: 13px; color: #6B6459;
-    min-width: 48px; text-align: center;
+    min-width: 48px; text-align: center; cursor: pointer;
   }
   .day-pill.active { background: #E8833A; color: #fff; border-color: #E8833A; font-weight: 600; }
   .day-pill.passed { opacity: 0.45; }
 
   .trip-header h2 { margin: 0 0 4px; font-size: 19px; }
-  .trip-meta { display: flex; gap: 12px; color: #8A8378; font-size: 13px; margin-bottom: 12px; }
-  .trip-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .trip-meta { display: flex; gap: 12px; color: #8A8378; font-size: 13px; margin-bottom: 12px; flex-wrap: wrap; }
   .highlights p { margin: 8px 0; font-size: 14.5px; }
+  .poi-link { color: #E8833A; font-weight: 500; cursor: pointer; }
+  .poi-link::after { content: " 📍"; font-size: 11px; }
+
+  /* 行程时间轴 */
+  .timeline { position: relative; padding-left: 8px; }
+  .tl-item {
+    position: relative;
+    padding: 0 0 16px 26px;
+    border-left: 2px solid #F0E0CC;
+  }
+  .tl-item:last-child { border-left-color: transparent; padding-bottom: 4px; }
+  .tl-dot {
+    position: absolute; left: -8px; top: 3px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; border: 3px solid #E8833A;
+  }
+  .tl-time {
+    display: inline-block;
+    font-size: 11px; font-weight: 600; color: #E8833A;
+    background: #FDF3E7;
+    padding: 2px 8px; border-radius: 999px;
+    margin-bottom: 6px;
+  }
+  .tl-desc { font-size: 14.5px; margin: 4px 0; }
   .hotel-row {
     margin-top: 12px; padding: 12px;
     background: #FDF3E7; border-radius: 12px;
     display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
   }
   .hotel-row .h-name { font-weight: 600; font-size: 14.5px; }
   .hotel-row .h-sub { font-size: 12px; color: #8A8378; margin-top: 2px; }
@@ -206,20 +244,18 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 22px; flex-shrink: 0;
   }
-  .contact-info { flex: 1; }
+  .contact-info { flex: 1; min-width: 0; }
   .contact-info .c-name { font-weight: 600; font-size: 16px; }
   .contact-info .c-role { font-size: 12px; color: #8A8378; }
-  .contact-info .c-phone { font-size: 13px; color: #6B6459; margin-top: 2px; }
+  .contact-info .c-phone { font-size: 14px; color: #2D2A26; margin-top: 4px; font-weight: 500; }
+  .contact-info .c-hint { font-size: 11px; color: #B8A990; margin-top: 2px; }
   .call-btn {
     width: 48px; height: 48px; border-radius: 50%;
     background: #34C759; color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-size: 20px; flex-shrink: 0;
   }
-  .emergency-tip {
-    text-align: center; color: #8A8378; font-size: 13px;
-    margin-top: 24px;
-  }
+  .emergency-tip { text-align: center; color: #8A8378; font-size: 13px; margin-top: 24px; }
 
   /* ===== 底部 Tab ===== */
   .tabbar {
@@ -232,20 +268,87 @@
   .tab-item {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    color: #B8A990; font-size: 11px; gap: 2px;
+    color: #B8A990; font-size: 11px; gap: 2px; cursor: pointer;
   }
   .tab-item .icon { font-size: 22px; }
   .tab-item.active { color: #E8833A; }
 
   .page { display: none; }
   .page.active { display: block; }
-
   .hidden { display: none !important; }
+
+  /* 分类修改：紧凑入口 + 锚定悬浮菜单 */
+  .todo-entry { position: relative; }
+  .todo-item { gap: 6px; cursor: default; }
+  .todo-main {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px;
+    border: 0; padding: 0; min-height: 44px; background: none;
+    color: inherit; font: inherit; text-align: left;
+  }
+  .todo-text { min-width: 0; overflow-wrap: anywhere; }
+  .more-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+    flex-shrink: 0; height: 32px; padding: 0 7px;
+    border: 1px solid #EFE5D6; border-radius: 7px; background: #fff;
+    cursor: pointer; color: #6B6459; font-size: 12px; white-space: nowrap;
+  }
+  .more-btn svg { width: 12px; height: 12px; transition: transform .2s; }
+  .more-btn.open { color: #B75B1D; border-color: #E8833A; background: #FDF3E7; }
+  .more-btn.open svg { transform: rotate(180deg); }
+  button.del-item { flex-shrink: 0; width: 32px; min-height: 40px; border: 0; background: none; color: #997B68; }
+  .more-btn:hover, .inline-dropdown button:hover { background: #FDF3E7; }
+  .more-btn:focus-visible, .inline-dropdown button:focus-visible, .todo-main:focus-visible {
+    outline: 2px solid #E8833A; outline-offset: 2px;
+  }
+  .inline-dropdown {
+    position: fixed; z-index: 25; top: 72px; right: 16px;
+    width: min(280px, calc(100vw - 24px)); max-height: calc(100vh - 96px); overflow-y: auto;
+    background: #fff; border: 1px solid #E3D6C5;
+    border-radius: 10px; padding: 8px;
+    box-shadow: 0 10px 28px rgba(76, 55, 30, .18);
+  }
+  .category-hint { margin: 2px 6px 6px; font-size: 12px; color: #6B6459; }
+  .category-options { max-height: 210px; overflow-y: auto; }
+  .inline-dropdown button {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; min-height: 38px; padding: 7px 9px;
+    background: transparent; border: none; text-align: left;
+    color: #2D2A26; font-size: 14px; border-radius: 7px;
+  }
+  .inline-dropdown button:disabled { color: #8A8378; cursor: default; background: #F3EEE6; }
+  .category-current { font-size: 11px; margin-left: 8px; white-space: nowrap; }
+  .inline-dropdown .new-cat { color: #B75B1D; font-weight: 600; border-top: 1px solid #EFE5D6; border-radius: 0; margin-top: 6px; }
+  .new-cat-form label { display: block; font-size: 13px; margin: 8px 0 6px; }
+  .new-cat-form input { width: 100%; min-width: 0; padding: 9px; font-size: 16px; border: 1px solid #D9CDB8; border-radius: 8px; }
+  .new-cat-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .new-cat-actions button { justify-content: center; }
+  .new-cat-actions .create-and-move { background: #E8833A; color: #fff; }
+  .category-error { margin: 6px 0 0; color: #B42318; font-size: 12px; }
+  .empty-category { color: #8A8378; font-size: 13px; padding: 8px 0; }
+  .weather-row {
+    margin-top: 10px; padding: 9px 11px; border-radius: 10px;
+    background: #F8F3EB; color: #5F574D; font-size: 13px;
+  }
+  .weather-row strong { color: #2D2A26; margin-right: 4px; }
+  .weather-row .pending { color: #8A8378; }
+  #actionStatus {
+    position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%);
+    z-index: 30; width: max-content; max-width: calc(100% - 32px);
+    border-radius: 10px; padding: 10px 16px; background: #2D2A26;
+    color: #fff; font-size: 14px; pointer-events: none;
+  }
+  .add-row input { min-width: 0; }
+  @media (max-width: 420px) {
+    .add-row { flex-wrap: wrap; }
+    .add-row input { flex-basis: 100%; }
+    .add-row select { flex: 1; min-width: 0; }
+    .add-row button { min-height: 44px; }
+    .inline-dropdown { width: min(270px, calc(100vw - 24px)); }
+  }
 </style>
 </head>
 <body>
 
-<!-- 启动页 -->
 <div id="splash">
   <div class="leaf">🍂</div>
   <h1>北疆秋色 9 日行</h1>
@@ -254,10 +357,7 @@
   <button class="enter-btn" onclick="enterApp()">进入行程 →</button>
 </div>
 
-<!-- 主界面 -->
 <div id="app" class="hidden">
-
-  <!-- 顶栏 -->
   <div class="topbar">
     <div class="whoami">
       <div class="avatar" id="avatarChar">雨</div>
@@ -266,7 +366,7 @@
     <button class="switch-btn" onclick="switchNickname()">切换</button>
   </div>
 
-  <!-- Tab 1: 待办清单 -->
+  <!-- Tab 1: 待办 -->
   <div class="page" id="page-todo">
     <div class="progress-block">
       <div class="progress-label">
@@ -278,37 +378,22 @@
 
     <div class="cat-nav" id="catNav"></div>
 
-    <!-- 集合信息 -->
     <div class="card accent" id="cat-meet">
       <h3>集合信息</h3>
       <div class="meet-info">
         <p><span class="label">时间</span>2026.9.24（周四）</p>
-        <p><span class="label">酒店</span>
-          <a class="jump-link" href="https://uri.amap.com/search?keyword=%E4%BC%8A%E5%8A%9B%E7%89%B9%E9%85%92%E5%BA%97%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90%E7%81%AB%E8%BD%A6%E5%8D%97%E7%AB%99%E5%BE%B7%E6%B1%87%E4%B8%87%E8%BE%BE%E5%BA%97&city=%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90&callnative=1" target="_blank">伊力特酒店（乌鲁木齐火车南站德汇万达店）</a>
-        </p>
+        <p><span class="label">酒店</span><a class="jump-link" target="_blank" href="https://uri.amap.com/marker?position=87.586056,43.788315&name=%E4%BC%8A%E5%8A%9B%E7%89%B9%E9%85%92%E5%BA%97&callnative=1">伊力特酒店（火车南站德汇万达店）</a></p>
         <p><span class="label">入住</span>14:00 后办理，早到可前台寄存行李</p>
         <p><span class="label">交通</span>机场打车约 35 分钟；或机场巴士 2 号线 9 站长江路站下步行 400 米</p>
-        <p><span class="label">天气</span>9.24 乌鲁木齐 ☀ 晴 14–23℃</p>
+        <p><span class="label">天气</span>9.24 乌鲁木齐 ⛅ 多云 14–23℃（出发前3天再查最新）</p>
       </div>
     </div>
 
-    <!-- 动态分类卡片由 JS 渲染 -->
     <div id="todoCards"></div>
-
-    <!-- 我的自定义待办 -->
-    <div class="card" id="cat-custom">
-      <h3>我的待办 <span class="count">私人</span></h3>
-      <div id="customList"></div>
-      <div class="add-row">
-        <input id="customInput" placeholder="+ 加一条..." maxlength="50">
-        <button onclick="addCustom()">添加</button>
-      </div>
-    </div>
-
     <button class="reset-btn" onclick="resetAll()">重置全部勾选</button>
   </div>
 
-  <!-- Tab 2: 每日行程 -->
+  <!-- Tab 2: 行程 -->
   <div class="page" id="page-trip">
     <div class="day-tabs" id="dayTabs"></div>
     <div id="tripDetail"></div>
@@ -316,15 +401,14 @@
 
   <!-- Tab 3: 联系人 -->
   <div class="page" id="page-contact">
-    <div class="card" style="margin-top:8px;">
-      <h3>紧急联系</h3>
-    </div>
+    <div class="card" style="margin-top:8px;"><h3>紧急联系</h3></div>
     <div class="contact-card">
       <div class="contact-avatar">👤</div>
       <div class="contact-info">
         <div class="c-name">春春</div>
         <div class="c-role">领队</div>
         <div class="c-phone">183 8240 8097</div>
+        <div class="c-hint">点右侧拨打 · 长按号码可复制</div>
       </div>
       <a class="call-btn" href="tel:18382408097">📞</a>
     </div>
@@ -334,13 +418,13 @@
         <div class="c-name">喜洋洋</div>
         <div class="c-role">导游</div>
         <div class="c-phone">152 7663 3828</div>
+        <div class="c-hint">点右侧拨打 · 长按号码可复制</div>
       </div>
       <a class="call-btn" href="tel:15276633828">📞</a>
     </div>
     <div class="emergency-tip">紧急情况先打领队，再打导游</div>
   </div>
 
-  <!-- 底部 Tab -->
   <div class="tabbar">
     <div class="tab-item active" data-tab="todo" onclick="switchTab('todo')">
       <div class="icon">📋</div><div>待办</div>
@@ -354,123 +438,166 @@
   </div>
 </div>
 
+<div id="actionStatus" class="hidden" role="status" aria-live="polite"></div>
+
 <script>
+let openDropdownFor = null;
+let statusTimer = null;
 // ============ 数据 ============
-const TODO_CATEGORIES = [
-  {
-    id: "cloth", name: "衣物", icon: "🧥",
-    items: ["长袖长裤", "冲锋衣+抓绒/薄羽绒", "秋衣秋裤", "中高帮户外鞋（防滑保暖防水最佳）", "运动鞋", "线帽", "遮阳帽"]
-  },
-  {
-    id: "medicine", name: "药物", icon: "💊",
-    items: ["感冒药", "消炎药", "晕车药", "驱蚊水", "风油精", "脱敏药", "红霉素软膏", "个人常用药"]
-  },
-  {
-    id: "id", name: "证件钱物", icon: "🪪",
-    items: ["身份证", "军官证/残疾证等优惠证件", "少量零钱（部分地方信号不好）"]
-  },
-  {
-    id: "other", name: "其他物品", icon: "🎒",
-    items: ["充电宝", "保温杯", "太阳镜", "润唇膏", "防晒霜", "雨具（建议雨衣）", "1-2日分装小背包"]
-  },
-  {
-    id: "notice", name: "注意事项", icon: "📌",
-    items: ["自备一次性洗漱用品、拖鞋", "贵重物品随身携带", "带水杯多喝温水", "车上备U型枕", "备路上零食"]
-  }
+const DEFAULT_CATEGORIES = [
+  { id: "cloth", name: "衣物", icon: "🧥" },
+  { id: "medicine", name: "药物", icon: "💊" },
+  { id: "id", name: "证件钱物", icon: "🪪" },
+  { id: "other", name: "其他物品", icon: "🎒" },
+  { id: "notice", name: "注意事项", icon: "📌" }
 ];
 
-// 行程数据（酒店名先用通知里的参考名占位）
+const DEFAULT_ITEMS = [
+  // 衣物
+  { id: "cloth_0", cat: "cloth", text: "长袖长裤" },
+  { id: "cloth_1", cat: "cloth", text: "冲锋衣+抓绒/薄羽绒" },
+  { id: "cloth_2", cat: "cloth", text: "秋衣秋裤" },
+  { id: "cloth_3", cat: "cloth", text: "中高帮户外鞋（防滑保暖防水最佳）" },
+  { id: "cloth_4", cat: "cloth", text: "运动鞋" },
+  { id: "cloth_5", cat: "cloth", text: "线帽" },
+  { id: "cloth_6", cat: "cloth", text: "遮阳帽" },
+  // 药物
+  { id: "med_0", cat: "medicine", text: "感冒药" },
+  { id: "med_1", cat: "medicine", text: "消炎药" },
+  { id: "med_2", cat: "medicine", text: "晕车药" },
+  { id: "med_3", cat: "medicine", text: "驱蚊水" },
+  { id: "med_4", cat: "medicine", text: "风油精" },
+  { id: "med_5", cat: "medicine", text: "脱敏药" },
+  { id: "med_6", cat: "medicine", text: "红霉素软膏" },
+  { id: "med_7", cat: "medicine", text: "个人常用药" },
+  // 证件
+  { id: "id_0", cat: "id", text: "身份证" },
+  { id: "id_1", cat: "id", text: "军官证/残疾证等优惠证件" },
+  { id: "id_2", cat: "id", text: "少量零钱（部分地方信号不好）" },
+  // 其他
+  { id: "oth_0", cat: "other", text: "充电宝" },
+  { id: "oth_1", cat: "other", text: "保温杯" },
+  { id: "oth_2", cat: "other", text: "太阳镜" },
+  { id: "oth_3", cat: "other", text: "润唇膏" },
+  { id: "oth_4", cat: "other", text: "防晒霜" },
+  { id: "oth_5", cat: "other", text: "雨具（建议雨衣）" },
+  { id: "oth_6", cat: "other", text: "1-2日分装小背包" },
+  // 注意
+  { id: "not_0", cat: "notice", text: "自备一次性洗漱用品、拖鞋" },
+  { id: "not_1", cat: "notice", text: "贵重物品随身携带" },
+  { id: "not_2", cat: "notice", text: "带水杯多喝温水" },
+  { id: "not_3", cat: "notice", text: "车上备U型枕" },
+  { id: "not_4", cat: "notice", text: "备路上零食" }
+];
+
+// 行程数据（sections 按时间轴排列，poi 自动加高德定位）
 const TRIP_DAYS = [
   {
-    day: 1, date: "9.24 周四", title: "各地 → 乌鲁木齐",
+    day: 1, date: "9.24 周四", title: "各地 → 乌鲁木齐（集合日）",
+    weather: { place: "乌鲁木齐", text: "多云 14–23℃", source: "高德城市预报快照" },
     drive: "—", meal: "不含，三餐自理",
     hotel: "伊力特酒店（乌鲁木齐4钻）", hotelKeyword: "伊力特酒店乌鲁木齐火车南站德汇万达店",
-    highlights: [
-      "全天集合，报「游侠客+姓名」办理入住",
-      "时间充裕可逛：新疆博物馆（免费，周一闭馆）或国际大巴扎",
-      "晚上大巴扎夜市：大盘鸡、烤羊排、烤羊肉串、马肠子"
+    sections: [
+      { time: "全天", icon: "🛬", desc: "自行前往集合酒店，报「游侠客+姓名」办理入住；早到可先寄存行李" },
+      { time: "下午", icon: "🏛", desc: "时间充裕可逛", poi: "87.584246,43.819603", poiText: "新疆博物馆" },
+      { time: "晚上", icon: "🌃", desc: "国际大巴扎夜市逛吃：大盘鸡、烤羊排、烤羊肉串、伊犁马肠子", poi: "87.618840,43.780701", poiText: "国际大巴扎" }
     ]
   },
   {
     day: 2, date: "9.25 周五", title: "乌鲁木齐 → 赛里木湖",
+    weather: { place: "博乐（赛里木湖邻近城市）", text: "多云 10–23℃", source: "高德城市预报快照；湖区体感可能更低" },
     drive: "约550km · 全程高速", meal: "含早，正餐自理",
-    hotel: "赛里木湖景区门口酒店", hotelKeyword: "赛里木湖中亚全纳酒店",
-    highlights: [
-      "「大西洋最后一滴眼泪」，湖面湛蓝，雪山环抱",
-      "湖边守候日落晚霞，晴朗夜可观银河星空",
-      "住景区门口稀缺资源酒店"
+    hotel: "赛里木湖景区门口酒店", hotelKeyword: "81.172193,44.604112",
+    sections: [
+      { time: "上午", icon: "🚌", desc: "早餐后出发，车上互相介绍破冰，沿高速前往赛里木湖" },
+      { time: "下午", icon: "🌊", desc: "抵达赛里木湖——「大西洋最后一滴眼泪」，湖面湛蓝，雪山环绕", poi: "81.172193,44.604112", poiText: "赛里木湖" },
+      { time: "傍晚", icon: "🌅", desc: "湖边守候日落晚霞；晴朗夜可观银河星空", poi: "81.172193,44.604112", poiText: "赛里木湖日落点" },
+      { time: "晚上", icon: "🏨", desc: "住赛里木湖景区门口稀缺资源酒店" }
     ]
   },
   {
     day: 3, date: "9.26 周六", title: "赛里木湖 → 奎屯",
+    weather: { place: "奎屯", text: "预报尚未覆盖", pending: true },
     drive: "约400km · 环湖路+高速", meal: "含早，正餐自理",
     hotel: "奎屯龙泽惠理酒店同级（4钻）", hotelKeyword: "奎屯龙泽惠理酒店",
-    highlights: [
-      "大巴车 360° 环湖，不同角度赏湖",
-      "帆船游湖 + 湖畔下午茶，幸运可见天鹅",
-      "游玩尽兴后驱车前往奎屯"
+    sections: [
+      { time: "上午", icon: "🚐", desc: "大巴车 360° 环湖，不同角度赏湖；幸运可见天鹅", poi: "81.172193,44.604112", poiText: "赛里木湖环湖" },
+      { time: "中午", icon: "⛵", desc: "帆船游湖（约30-40分钟）+ 湖畔下午茶，干果奶茶拍照" },
+      { time: "下午", icon: "🛣", desc: "游玩尽兴后离开，驱车前往奎屯" },
+      { time: "晚上", icon: "🏨", desc: "住奎屯市区4钻酒店" }
     ]
   },
   {
     day: 4, date: "9.27 周日", title: "奎屯 → 乌尔禾 → 布尔津",
+    weather: { place: "布尔津", text: "预报尚未覆盖", pending: true },
     drive: "约460km · 高速为主", meal: "含早，正餐自理",
     hotel: "布尔津神湖酒店同级（4钻）", hotelKeyword: "布尔津神湖酒店",
-    highlights: [
-      "上午：乌尔禾秘境胡杨林，私家踩线点",
-      "下午：乌尔禾魔鬼城，中国最美雅丹",
-      "晚上抵达俄罗斯风情小镇布尔津，自由觅食"
+    sections: [
+      { time: "上午", icon: "🍂", desc: "早餐后出发，寻访「活着千年不死」的乌尔禾秘境胡杨林（私家踩线点）", poi: "85.687497,46.093451", poiText: "乌尔禾秘境胡杨林" },
+      { time: "下午", icon: "🏜", desc: "进入乌尔禾魔鬼城——《中国国家地理》最美雅丹，风蚀地貌", poi: "85.687497,46.093451", poiText: "乌尔禾魔鬼城" },
+      { time: "晚上", icon: "🏘", desc: "抵达俄罗斯风情小镇布尔津，自由结伴逛河堤夜市", poi: "86.869855,47.706654", poiText: "布尔津县城" }
     ]
   },
   {
     day: 5, date: "9.28 周一", title: "布尔津 → 五彩滩 → 白哈巴",
+    weather: { place: "白哈巴", text: "预报尚未覆盖", pending: true },
     drive: "约170km", meal: "含早，赠送一正餐",
     hotel: "白哈巴景区内图瓦木屋", hotelKeyword: "白哈巴村",
-    highlights: [
-      "上午：五彩滩临水雅丹，额尔齐斯河畔",
-      "西线铁热克提进白哈巴，走中哈边境公路秋色",
-      "途经呼吉尔特转场道，运气好可见牛羊大转场",
-      "晚上住图瓦木屋，看边陲星空"
+    sections: [
+      { time: "上午", icon: "🎨", desc: "游玩五彩滩，额尔齐斯河畔临水雅丹", poi: "86.869855,47.706654", poiText: "五彩滩" },
+      { time: "上午", icon: "🐑", desc: "途经呼吉尔特转场道，运气好可见成千上万牛羊转场" },
+      { time: "下午", icon: "🏔", desc: "西线铁热克提进白哈巴（不走回头路），沿中哈边境公路秋色", poi: "86.787731,48.693566", poiText: "白哈巴村（西北第一村）" },
+      { time: "傍晚", icon: "🌄", desc: "爬上村旁山坡看边陲晚霞；可去也根德空中草原打卡孤独的树" },
+      { time: "晚上", icon: "🌌", desc: "住图瓦木屋，满天繁星银河似练" }
     ]
   },
   {
     day: 6, date: "9.29 周二", title: "白哈巴 → 喀纳斯",
+    weather: { place: "喀纳斯", text: "预报尚未覆盖", pending: true },
     drive: "约60km · 景区公路", meal: "含早，正餐自理",
     hotel: "喀纳斯景区内图瓦木屋", hotelKeyword: "喀纳斯景区",
-    highlights: [
-      "早起可看村口观景台晨雾炊烟",
-      "上午：喀纳斯湖边栈道漫步",
-      "下午：登观鱼台俯瞰喀纳斯湖，远眺友谊峰"
+    sections: [
+      { time: "清晨", icon: "🌫", desc: "习惯早起可自行前往村口观景台，看晨曦中白哈巴晨雾炊烟" },
+      { time: "上午", icon: "🏞", desc: "乘区间车离开白哈巴，前往「神的后花园」喀纳斯", poi: "87.130853,48.507195", poiText: "喀纳斯景区" },
+      { time: "下午", icon: "🚶", desc: "抵达换乘中心后换景交车至喀纳斯湖，沿湖滨栈道漫步", poi: "87.130853,48.507195", poiText: "喀纳斯湖" },
+      { time: "下午", icon: "⛰", desc: "登观鱼台俯瞰整个喀纳斯湖，天气好远眺友谊峰", poi: "87.130853,48.507195", poiText: "观鱼台" },
+      { time: "晚上", icon: "🏨", desc: "住喀纳斯景区内图瓦木屋（尊享团特有）" }
     ]
   },
   {
     day: 7, date: "9.30 周三", title: "喀纳斯 → 禾木",
+    weather: { place: "禾木", text: "预报尚未覆盖", pending: true },
     drive: "约60km · 景区公路", meal: "含早，正餐自理",
     hotel: "禾木老村图瓦木屋（核心地段）", hotelKeyword: "禾木村",
-    highlights: [
-      "早晨：神仙湾梦幻晨雾（住景区内优势）",
-      "上午：月亮湾→卧龙湾 3km 轻徒步",
-      "下午：禾木河畔白桦林自由漫步",
-      "傍晚：禾木日落观景台看炊烟牧归"
+    sections: [
+      { time: "清晨", icon: "🌫", desc: "早起前往神仙湾，邂逅梦幻晨雾（住景区内优势）", poi: "神仙湾", poiText: "神仙湾" },
+      { time: "上午", icon: "🚶", desc: "三湾轻徒步：月亮湾→卧龙湾约3km下坡；不想徒步可坐景交车", poi: "月亮湾", poiText: "月亮湾 · 卧龙湾" },
+      { time: "下午", icon: "🌳", desc: "换乘景交进入禾木村，禾木河畔白桦林自由漫步；可骑马去美丽峰", poi: "87.441886,48.573570", poiText: "禾木村" },
+      { time: "傍晚", icon: "🌇", desc: "登禾木日落观景台，看炊烟袅袅的图瓦村落", poi: "87.441886,48.573570", poiText: "禾木日落观景台" },
+      { time: "晚上", icon: "🌌", desc: "住禾木老村核心地段，夜可观星" }
     ]
   },
   {
     day: 8, date: "10.1 周四", title: "禾木 → 阿禾公路 → 阿勒泰",
+    weather: { place: "阿勒泰", text: "预报尚未覆盖", pending: true },
     drive: "约200km", meal: "含早，正餐自理",
     hotel: "阿勒泰桔子水晶酒店同级（4钻）", hotelKeyword: "阿勒泰桔子水晶酒店",
-    highlights: [
-      "清晨：哈登观景台看禾木日出晨雾",
-      "穿越阿禾公路208km边境公路，号称「小独库」",
-      "可能邂逅小狐狸；晚上不建议订航班离开"
+    sections: [
+      { time: "清晨", icon: "🌅", desc: "趁日出前登哈登观景台，看禾木晨雾炊烟", poi: "87.441886,48.573570", poiText: "哈登观景台" },
+      { time: "上午", icon: "🛣", desc: "穿越阿禾公路208km边境公路（小独库），高山森林草原峡谷不断切换", poi: "88.303248,48.223628", poiText: "阿禾公路" },
+      { time: "下午", icon: "🦊", desc: "路上可能邂逅小狐狸；抵达阿勒泰入住酒店" },
+      { time: "晚上", icon: "⚠️", desc: "路上时间不确定性大，不建议买今晚航班离开" }
     ]
   },
   {
     day: 9, date: "10.2 周五", title: "阿勒泰 → 乌鲁木齐（解散）",
+    weather: { place: "乌鲁木齐", text: "预报尚未覆盖", pending: true },
     drive: "约500km · 全程高速", meal: "含早，正餐自理",
     hotel: null, hotelKeyword: null,
-    highlights: [
-      "穿越古尔班通古特沙漠返回乌鲁木齐",
-      "预计 15:00 抵达，请订 17:00 之后的机票/火车",
-      "也可选择阿勒泰机场直接离团飞走"
+    sections: [
+      { time: "上午", icon: "🏜", desc: "早餐后出发（早餐可能打包），穿越古尔班通古特沙漠", poi: "86.629347,45.077328", poiText: "古尔班通古特沙漠" },
+      { time: "下午", icon: "🚌", desc: "预计 15:00 抵达乌鲁木齐，先后送机场、火车站、市区酒店", poi: "87.586056,43.788315", poiText: "乌鲁木齐" },
+      { time: "提示", icon: "✈️", desc: "请订 17:00 之后的机票/火车；也可选择阿勒泰机场直接离团飞走" }
     ]
   }
 ];
@@ -483,23 +610,27 @@ function lsGet(key, def) {
   try { return JSON.parse(localStorage.getItem(key)) ?? def; }
   catch(e) { return def; }
 }
-function lsSet(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
+function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+// 存储 key
+function sKey() { return "xj_state_" + nickname; }
+function getState() {
+  const def = { checked:{}, deletedItems:[], deletedCats:[], catOverrides:{}, customCats:[], custom:[], daily:{}, notes:{} };
+  const saved = lsGet(sKey(), null);
+  if (!saved) return def;
+  // 合并默认值，旧数据缺新字段时自动补
+  return { ...def, ...saved,
+    checked: saved.checked || {},
+    catOverrides: saved.catOverrides || {},
+    deletedItems: saved.deletedItems || [],
+    deletedCats: saved.deletedCats || [],
+    customCats: saved.customCats || [],
+    custom: saved.custom || [],
+    daily: saved.daily || {},
+    notes: saved.notes || {}
+  };
 }
-
-function todoKey() { return "xj_todo_" + nickname; }
-function customKey() { return "xj_custom_" + nickname; }
-function dailyKey(d) { return "xj_daily_" + nickname + "_D" + d; }
-function noteKey(d) { return "xj_note_" + nickname + "_D" + d; }
-
-function getTodoState() { return lsGet(todoKey(), {}); }
-function setTodoState(s) { lsSet(todoKey(), s); }
-function getCustom() { return lsGet(customKey(), []); }
-function setCustom(a) { lsSet(customKey(), a); }
-function getDailyTodos(d) { return lsGet(dailyKey(d), []); }
-function setDailyTodos(d, a) { lsSet(dailyKey(d), a); }
-function getNote(d) { return lsGet(noteKey(d), ""); }
-function setNote(d, t) { lsSet(noteKey(d), t); }
+function setState(s) { lsSet(sKey(), s); }
 
 // ============ 启动 ============
 function enterApp() {
@@ -511,18 +642,19 @@ function enterApp() {
   document.getElementById("app").classList.remove("hidden");
   document.getElementById("nicknameLabel").textContent = nickname;
   document.getElementById("avatarChar").textContent = nickname[0].toUpperCase();
+  currentDay = guessToday();
   renderAll();
+  switchTab("todo");
 }
 
 function switchNickname() {
-  if (confirm("切换昵称？当前勾选会保留在原昵称下")) {
+  if (confirm("切换昵称？当前数据会保留在原昵称下")) {
     localStorage.removeItem("xj_trip_nickname");
     location.reload();
   }
 }
 
-// 恢复昵称
-(function init() {
+function init() {
   const saved = localStorage.getItem("xj_trip_nickname");
   if (saved) {
     try {
@@ -533,22 +665,21 @@ function switchNickname() {
         document.getElementById("app").classList.remove("hidden");
         document.getElementById("nicknameLabel").textContent = nickname;
         document.getElementById("avatarChar").textContent = nickname[0].toUpperCase();
-        // 自动定位今天
         currentDay = guessToday();
         renderAll();
+        switchTab("todo");
         return;
       }
     } catch(e) {}
   }
-  // 没昵称，停留 splash
   currentDay = guessToday();
   document.getElementById("nicknameInput").addEventListener("keydown", e => {
     if (e.key === "Enter") enterApp();
   });
-})();
+}
 
 function guessToday() {
-  const start = new Date(2026, 8, 24); // 9.24
+  const start = new Date(2026, 8, 24);
   const now = new Date();
   const diff = Math.floor((now - start) / 86400000) + 1;
   if (diff < 1) return 1;
@@ -556,7 +687,7 @@ function guessToday() {
   return diff;
 }
 
-// ============ Tab 切换 ============
+// ============ Tab ============
 function switchTab(name) {
   document.querySelectorAll(".tab-item").forEach(el => {
     el.classList.toggle("active", el.dataset.tab === name);
@@ -567,62 +698,346 @@ function switchTab(name) {
 }
 
 // ============ 待办渲染 ============
+function getVisibleItems() {
+  const s = getState();
+  return DEFAULT_ITEMS.filter(it => !s.deletedItems.includes(it.id))
+    .map(it => s.catOverrides[it.id] ? {...it, cat: s.catOverrides[it.id]} : it);
+}
+
+function getVisibleCategories() {
+  const s = getState();
+  const visible = getVisibleItems();
+  // 默认分类（未被删除的）
+  let cats = DEFAULT_CATEGORIES.filter(c => !s.deletedCats.includes(c.id));
+  // 用户自建分类
+  if (s.customCats && s.customCats.length) {
+    cats = cats.concat(s.customCats);
+  }
+  // 检查是否有 item 落在已删除分类里（归未分类）
+  const catIds = new Set(cats.map(c => c.id));
+  const hasUncategorized = visible.some(it => !catIds.has(it.cat));
+  const customItemCats = new Set(s.custom.map(c => c.cat));
+  const hasCustomInDeleted = [...customItemCats].some(c => !catIds.has(c));
+  const hasAnyUncat = hasUncategorized || hasCustomInDeleted;
+  if (hasAnyUncat) {
+    cats = cats.concat([{ id: "uncategorized", name: "未分类", icon: "📦" }]);
+  }
+  return cats;
+}
+
 function renderTodo() {
-  const state = getTodoState();
+  const s = getState();
   const cardsEl = document.getElementById("todoCards");
   cardsEl.innerHTML = "";
+  const visibleItems = getVisibleItems();
+  const cats = getVisibleCategories();
+  // 合并 custom items 到对应分类渲染
+  const allItemsByCat = {};
+  cats.forEach(c => allItemsByCat[c.id] = []);
+  visibleItems.forEach(it => {
+    const cid = cats.find(c => c.id === it.cat) ? it.cat : "uncategorized";
+    if (!allItemsByCat[cid]) allItemsByCat[cid] = [];
+    allItemsByCat[cid].push(it);
+  });
+  // 加自定义待办
+  s.custom.forEach((c, i) => {
+    const cid = cats.find(ct => ct.id === c.cat) ? c.cat : "uncategorized";
+    if (!allItemsByCat[cid]) allItemsByCat[cid] = [];
+    allItemsByCat[cid].push({ id: "custom_" + c.id, cat: cid, text: c.text, done: c.done, customIdx: i });
+  });
+
   let total = 0, done = 0;
 
-  TODO_CATEGORIES.forEach(cat => {
+  cats.forEach(cat => {
+    const items = allItemsByCat[cat.id] || [];
+    if (items.length === 0 && cat.id === "uncategorized") return;
+
     const card = document.createElement("div");
     card.className = "card";
     card.id = "cat-" + cat.id;
 
     let itemsHtml = "";
-    cat.items.forEach((item, idx) => {
-      const key = cat.id + "_" + idx;
-      const checked = !!state[key];
+    items.forEach(it => {
+      const isCustom = it.customIdx !== undefined;
+      const checked = isCustom ? !!it.done : !!s.checked[it.id];
       total++;
       if (checked) done++;
+      // 明确的类型 + 稳定 ID；不能用首字母 c 或数组下标判断类型。
+      const dropdownKey = isCustom ? "custom:" + String(s.custom[it.customIdx].id) : "default:" + it.id;
+      const keyArg = escapeHtml(JSON.stringify(dropdownKey));
+      const isOpen = openDropdownFor === dropdownKey;
+      const panelId = "category-panel-" + encodeURIComponent(dropdownKey);
       itemsHtml += `
-        <div class="todo-item ${checked ? "done" : ""}" onclick="toggleTodo('${key}')">
-          <div class="checkbox ${checked ? "checked" : ""}"></div>
-          <div class="todo-text">${item}</div>
+        <div class="todo-entry" data-item-key="${escapeHtml(dropdownKey)}">
+          <div class="todo-item ${checked ? "done" : ""}">
+            <button type="button" class="todo-main" aria-pressed="${checked}" onclick="toggleItem('${it.id}', ${isCustom ? it.customIdx : -1})">
+              <span class="checkbox ${checked ? "checked" : ""}" aria-hidden="true"></span>
+              <span class="todo-text">${escapeHtml(it.text)}</span>
+            </button>
+            <button type="button" class="more-btn ${isOpen ? "open" : ""}" aria-label="修改分类：${escapeHtml(it.text)}" aria-expanded="${isOpen}" aria-controls="${panelId}" onclick="toggleDropdown(${keyArg})">分类<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+            <button type="button" class="del-item" aria-label="删除：${escapeHtml(it.text)}" title="删除待办" onclick="deleteItem('${it.id}', ${isCustom ? it.customIdx : -1})">×</button>
+          </div>
+          ${isOpen ? renderCategoryDropdown(dropdownKey, cat, panelId) : ""}
         </div>`;
     });
 
+    const canDeleteCat = !["uncategorized"].includes(cat.id);
     card.innerHTML = `
-      <h3><span>${cat.icon} ${cat.name}</span><span class="count">${cat.items.length} 项</span></h3>
-      ${itemsHtml}`;
+      <h3>
+        <span>${escapeHtml(cat.icon)} ${escapeHtml(cat.name)}</span>
+        <span class="right">
+          <span class="count">${items.length} 项</span>
+          ${canDeleteCat ? `<span class="del-cat" onclick="deleteCat('${cat.id}')">删除分类</span>` : ""}
+        </span>
+      </h3>
+      ${itemsHtml || '<div class="empty-category">暂无待办，可将其他待办移入此分类。</div>'}`;
     cardsEl.appendChild(card);
   });
 
-  // 进度
+  // 加自定义待办输入框（单独卡片，选分类）
+  const addCard = document.createElement("div");
+  addCard.className = "card";
+  const catOptions = (cats.length ? cats : [{id: "uncategorized", name: "未分类"}]).map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
+  addCard.innerHTML = `
+    <h3>➕ 添加待办</h3>
+    <div class="add-row">
+      <input id="customInput" placeholder="写点什么..." maxlength="50">
+      <select id="customCat">${catOptions}</select>
+      <button onclick="addCustom()">添加</button>
+    </div>`;
+  cardsEl.appendChild(addCard);
+
   document.getElementById("progressText").textContent = done + "/" + total;
   document.getElementById("progressFill").style.width = (total ? done/total*100 : 0) + "%";
 
   renderCatNav();
-  renderCustom();
+  if (openDropdownFor) placeCategoryDropdown(openDropdownFor);
 }
 
-function toggleTodo(key) {
-  const s = getTodoState();
-  s[key] = !s[key];
-  setTodoState(s);
+function toggleItem(itemId, customIdx) {
+  const s = getState();
+  if (customIdx >= 0) {
+    s.custom[customIdx].done = !s.custom[customIdx].done;
+  } else {
+    s.checked[itemId] = !s.checked[itemId];
+  }
+  setState(s);
   renderTodo();
+}
+
+function deleteItem(itemId, customIdx) {
+  if (!confirm("删除这条？")) return;
+  const s = getState();
+  if (customIdx >= 0) {
+    s.custom.splice(customIdx, 1);
+  } else {
+    if (!s.deletedItems.includes(itemId)) s.deletedItems.push(itemId);
+    delete s.checked[itemId];
+  }
+  setState(s);
+  renderTodo();
+}
+
+function deleteCat(catId) {
+  if (catId === "uncategorized") return;
+  const s = getState();
+  const cat = [...DEFAULT_CATEGORIES, ...s.customCats].find(c => c.id === catId);
+  if (!cat || !confirm(`删除「${cat.name}」分类？该分类下的待办会移到「未分类」`)) return;
+  if (!s.deletedCats.includes(catId)) s.deletedCats.push(catId);
+  s.customCats = s.customCats.filter(c => c.id !== catId);
+  setState(s);
+  openDropdownFor = null;
+  renderTodo();
+  showStatus("分类已删除，待办保留在未分类中");
+}
+
+function renderCategoryDropdown(key, currentCat, panelId) {
+  const keyArg = escapeHtml(JSON.stringify(key));
+  const categories = getVisibleCategories().filter(c => c.id !== "uncategorized")
+    .concat([{id: "uncategorized", name: "未分类", icon: ""}]);
+  return `<div id="${panelId}" class="inline-dropdown" role="menu" aria-label="修改分类" onkeydown="if(event.key==='Escape'){closeDropdown();}">
+    <p class="category-hint">当前：${escapeHtml(currentCat.name)}</p>
+    <div class="category-options">${categories.map(c => {
+      const selected = c.id === currentCat.id;
+      return `<button type="button" role="menuitem" ${selected ? "disabled" : ""} onclick="doMove(${escapeHtml(JSON.stringify(c.id))}, ${keyArg})"><span>${escapeHtml(c.name)}</span>${selected ? '<span class="category-current">当前</span>' : ''}</button>`;
+    }).join("")}</div>
+    <button type="button" class="new-cat" onclick="showCategoryCreator()">＋ 新建分类并移入</button>
+    <form class="new-cat-form hidden" onsubmit="event.preventDefault(); createCategoryAndMove(${keyArg}, this)">
+      <label for="newCategoryName">新分类名称</label>
+      <input id="newCategoryName" name="categoryName" maxlength="20" autocomplete="off" placeholder="例如：摄影装备" aria-describedby="categoryFormError">
+      <p id="categoryFormError" class="category-error" role="alert"></p>
+      <div class="new-cat-actions">
+        <button type="submit" class="create-and-move">新建并移入</button>
+        <button type="button" onclick="hideCategoryCreator()">取消</button>
+      </div>
+    </form>
+  </div>`;
+}
+function showCategoryCreator() {
+  const panel = document.querySelector(".inline-dropdown");
+  if (!panel) return;
+  panel.querySelector(".new-cat").classList.add("hidden");
+  panel.querySelector(".new-cat-form").classList.remove("hidden");
+  placeCategoryDropdown(openDropdownFor);
+  panel.querySelector("input").focus();
+}
+function hideCategoryCreator() {
+  const panel = document.querySelector(".inline-dropdown");
+  if (!panel) return;
+  panel.querySelector(".new-cat-form").classList.add("hidden");
+  panel.querySelector(".new-cat").classList.remove("hidden");
+  placeCategoryDropdown(openDropdownFor);
+  panel.querySelector(".new-cat").focus();
+}
+function toggleDropdown(key) {
+  openDropdownFor = (openDropdownFor === key) ? null : key;
+  renderTodo();
+  focusCategoryButton(key);
+  if (openDropdownFor) placeCategoryDropdown(key);
+}
+function placeCategoryDropdown(key) {
+  requestAnimationFrame(() => {
+    const row = [...document.querySelectorAll("#todoCards [data-item-key]")].find(el => el.dataset.itemKey === key);
+    const panel = row && row.querySelector(".inline-dropdown");
+    const trigger = row && row.querySelector(".more-btn");
+    if (!panel || !trigger) return;
+    const triggerRect = trigger.getBoundingClientRect();
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
+    const margin = 12;
+    const bottomSafe = 76;
+    let left = Math.max(margin, Math.min(triggerRect.right - width, window.innerWidth - width - margin));
+    let top = triggerRect.bottom + 6;
+    if (top + height > window.innerHeight - bottomSafe) top = triggerRect.top - height - 6;
+    top = Math.max(margin, Math.min(top, window.innerHeight - height - bottomSafe));
+    panel.style.left = left + "px";
+    panel.style.top = top + "px";
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
+  });
+}
+function closeDropdown() {
+  const key = openDropdownFor;
+  openDropdownFor = null;
+  renderTodo();
+  focusCategoryButton(key);
+}
+function focusCategoryButton(key) {
+  const row = [...document.querySelectorAll("#todoCards [data-item-key]")].find(el => el.dataset.itemKey === key);
+  const button = row && row.querySelector(".more-btn");
+  if (button) button.focus({preventScroll: true});
+}
+function resolveCategoryItem(s, key) {
+  if (typeof key !== "string") return null;
+  if (key.startsWith("default:")) {
+    const id = key.slice(8);
+    const item = DEFAULT_ITEMS.find(it => it.id === id && !s.deletedItems.includes(id));
+    return item ? {type: "default", id, item} : null;
+  }
+  if (key.startsWith("custom:")) {
+    const id = key.slice(7);
+    const item = s.custom.find(it => String(it.id) === id);
+    return item ? {type: "custom", id, item} : null;
+  }
+  return null;
+}
+function applyCategory(s, target, catId) {
+  if (target.type === "custom") target.item.cat = catId;
+  else s.catOverrides[target.id] = catId;
+}
+function doMove(catId, key) {
+  const s = getState();
+  const target = resolveCategoryItem(s, key);
+  const category = catId === "uncategorized" ? {id: catId, name: "未分类"} :
+    [...DEFAULT_CATEGORIES, ...s.customCats].find(c => c.id === catId && !s.deletedCats.includes(c.id));
+  if (!target || !category) { showStatus("待办或分类已变更，请重新选择"); return false; }
+  applyCategory(s, target, catId);
+  if (!saveCategoryState(s)) return false;
+  openDropdownFor = null;
+  renderTodo();
+  focusCategoryButton(key);
+  showStatus(`「${target.item.text}」已移至「${category.name}」`);
+  return true;
+}
+function saveCategoryState(s) {
+  try { setState(s); return true; }
+  catch (error) {
+    console.error("分类保存失败", error);
+    showStatus("未保存成功：浏览器存储不可用，请检查存储设置后重试");
+    return false;
+  }
+}
+function makeCategoryId() {
+  return "custom_" + (globalThis.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now() + "_" + Math.random().toString(36).slice(2));
+}
+function validateCategoryName(s, value) {
+  const name = String(value || "").trim();
+  if (!name) return {error: "请输入分类名称"};
+  if (name.length > 20) return {error: "分类名称最多20个字符"};
+  const names = [...DEFAULT_CATEGORIES, ...s.customCats].filter(c => !s.deletedCats.includes(c.id)).map(c => c.name);
+  if (["全部", "未分类", ...names].some(n => n.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+    return {error: "该分类已存在，请直接选择；或使用其他名称"};
+  }
+  return {name};
+}
+function createCategoryAndMove(key, form) {
+  const s = getState();
+  const result = validateCategoryName(s, form.elements.categoryName.value);
+  const target = resolveCategoryItem(s, key);
+  const error = form.querySelector(".category-error");
+  if (result.error || !target) {
+    error.textContent = result.error || "该待办已不存在，请重新选择";
+    return false;
+  }
+  const category = {id: makeCategoryId(), name: result.name, icon: ""};
+  s.customCats.push(category);
+  applyCategory(s, target, category.id);
+  if (!saveCategoryState(s)) return false;
+  openDropdownFor = null;
+  renderTodo();
+  focusCategoryButton(key);
+  showStatus(`已新建「${category.name}」，并移入「${target.item.text}」`);
+  return true;
+}
+function showStatus(message) {
+  const el = document.getElementById("actionStatus");
+  el.textContent = message;
+  el.classList.remove("hidden");
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => el.classList.add("hidden"), 4000);
+}
+function addCategory() {
+  const name = prompt("新分类名称（最多20个字符）：");
+  if (name === null) return;
+  const s = getState();
+  const result = validateCategoryName(s, name);
+  if (result.error) { showStatus(result.error); return; }
+  s.customCats.push({id: makeCategoryId(), name: result.name, icon: ""});
+  if (!saveCategoryState(s)) return;
+  renderTodo();
+  showStatus(`已新建「${result.name}」`);
 }
 
 function renderCatNav() {
   const nav = document.getElementById("catNav");
-  nav.innerHTML = `<div class="cat-pill active" onclick="scrollTop(this)">全部</div>`;
-  TODO_CATEGORIES.forEach(cat => {
+  nav.innerHTML = `<button type="button" class="cat-pill active" onclick="scrollTodoToTop(this)">全部</button>`;
+  const cats = getVisibleCategories();
+  cats.forEach(cat => {
     const pill = document.createElement("div");
     pill.className = "cat-pill";
-    pill.textContent = cat.name;
+    pill.textContent = cat.icon + " " + cat.name;
     pill.dataset.target = "cat-" + cat.id;
     pill.onclick = () => scrollToCat(pill);
     nav.appendChild(pill);
   });
+  // 新建分类按钮
+  const addBtn = document.createElement("div");
+  addBtn.className = "cat-pill";
+  addBtn.style.color = "#E8833A";
+  addBtn.style.fontWeight = "600";
+  addBtn.textContent = "＋ 新分类";
+  addBtn.onclick = () => addCategory();
+  nav.appendChild(addBtn);
 }
 
 function scrollToCat(pill) {
@@ -634,74 +1049,53 @@ function scrollToCat(pill) {
     window.scrollTo({ top: y, behavior: "smooth" });
   }
 }
-function scrollTop(pill) {
+function scrollTodoToTop(pill) {
   document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
   pill.classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderCustom() {
-  const list = getCustom();
-  const el = document.getElementById("customList");
-  el.innerHTML = "";
-  if (list.length === 0) {
-    el.innerHTML = `<div style="color:#B8A990;font-size:13px;padding:4px 0">还没有，加一条吧</div>`;
-    return;
-  }
-  list.forEach((item, i) => {
-    const row = document.createElement("div");
-    row.className = "todo-item" + (item.done ? " done" : "");
-    row.innerHTML = `
-      <div class="checkbox ${item.done ? "checked" : ""}" onclick="toggleCustom(${i})"></div>
-      <div class="todo-text" onclick="toggleCustom(${i})">${escapeHtml(item.text)}</div>
-      <div style="color:#D9CDB8;font-size:18px;padding:0 4px" onclick="deleteCustom(${i})">×</div>`;
-    el.appendChild(row);
-  });
-}
-
-function toggleCustom(i) {
-  const list = getCustom();
-  list[i].done = !list[i].done;
-  setCustom(list);
-  renderCustom();
-}
-function deleteCustom(i) {
-  if (!confirm("删除这条待办？")) return;
-  const list = getCustom();
-  list.splice(i, 1);
-  setCustom(list);
-  renderCustom();
-}
 function addCustom() {
   const input = document.getElementById("customInput");
+  const catSel = document.getElementById("customCat");
   const v = input.value.trim();
   if (!v) return;
-  const list = getCustom();
-  list.push({ id: Date.now(), text: v, done: false });
-  setCustom(list);
-  input.value = "";
-  renderCustom();
+  const s = getState();
+  s.custom.push({ id: Date.now(), cat: catSel.value, text: v, done: false });
+  setState(s);
+  renderTodo();
 }
 
 function resetAll() {
-  if (!confirm("确定清空所有勾选？自定义待办和每日备注不受影响")) return;
-  setTodoState({});
+  if (!confirm("确定清空所有勾选？删除的分类和待办不受影响")) return;
+  const s = getState();
+  s.checked = {};
+  s.custom.forEach(c => c.done = false);
+  setState(s);
   renderTodo();
 }
 
 // ============ 行程渲染 ============
+function amapUrl(poi, poiName) {
+  if (poi && poi.indexOf(",") > 0) {
+    // 精确坐标跳转
+    return "https://uri.amap.com/marker?position=" + poi + "&name=" + encodeURIComponent(poiName || "") + "&callnative=1&src=xinjiang_trip";
+  }
+  return "https://uri.amap.com/search?keyword=" + encodeURIComponent(poi || "") + "&city=" + encodeURIComponent("新疆") + "&callnative=1";
+}
+
 function renderTripTabs() {
   const el = document.getElementById("dayTabs");
   el.innerHTML = "";
+  const todayGuess = guessToday();
   TRIP_DAYS.forEach(d => {
     const pill = document.createElement("div");
     pill.className = "day-pill" + (d.day === currentDay ? " active" : "");
-    if (d.day < guessToday()) pill.classList.add("passed");
+    if (d.day < todayGuess) pill.classList.add("passed");
     pill.textContent = "D" + d.day;
     pill.onclick = () => { currentDay = d.day; renderTripTabs(); renderTripDetail(); };
     el.appendChild(pill);
   });
-  // 自动滚动到当前
   const active = el.querySelector(".day-pill.active");
   if (active) active.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
 }
@@ -709,12 +1103,19 @@ function renderTripTabs() {
 function renderTripDetail() {
   const d = TRIP_DAYS[currentDay - 1];
   const el = document.getElementById("tripDetail");
-  const amapUrl = (kw) => "https://uri.amap.com/search?keyword=" + encodeURIComponent(kw) + "&city=" + encodeURIComponent("新疆") + "&callnative=1";
+  const s = getState();
+  const daily = s.daily["D" + d.day] || [];
+  const note = s.notes["D" + d.day] || "";
+
+  const tlHtml = d.sections.map(sec => {
+    const poi = sec.poi ? ` <a class="poi-link" target="_blank" href="${amapUrl(sec.poi, sec.poiText)}">${escapeHtml(sec.poiText)}</a>` : "";
+    return `<div class="tl-item"><div class="tl-dot"></div><div class="tl-time">${sec.icon} ${sec.time}</div><div class="tl-desc">${escapeHtml(sec.desc)}${poi}</div></div>`;
+  }).join("");
 
   let hotelHtml = "";
   if (d.hotel) {
     hotelHtml = `
-      <a class="hotel-row" href="${amapUrl(d.hotelKeyword)}" target="_blank">
+      <a class="hotel-row" target="_blank" href="${amapUrl(d.hotelKeyword, d.hotel)}">
         <div>
           <div class="h-name">🏨 ${d.hotel}</div>
           <div class="h-sub">点这里在高德打开</div>
@@ -723,20 +1124,15 @@ function renderTripDetail() {
       </a>`;
   }
 
-  // 当日待办
-  const daily = getDailyTodos(d.day);
   let dailyHtml = "";
   daily.forEach((t, i) => {
     dailyHtml += `
       <div class="todo-item ${t.done ? "done" : ""}" onclick="toggleDaily(${d.day}, ${i})">
         <div class="checkbox ${t.done ? "checked" : ""}"></div>
         <div class="todo-text">${escapeHtml(t.text)}</div>
-        <div style="color:#D9CDB8;font-size:18px;padding:0 4px" onclick="deleteDaily(${d.day}, ${i})">×</div>
+        <div class="del-item" onclick="event.stopPropagation(); deleteDaily(${d.day}, ${i})">×</div>
       </div>`;
   });
-
-  // 备注
-  const note = getNote(d.day);
 
   el.innerHTML = `
     <div class="card trip-header">
@@ -745,10 +1141,11 @@ function renderTripDetail() {
         <span>🚗 ${d.drive}</span>
         <span>🍽 ${d.meal}</span>
       </div>
+      <div class="weather-row"><strong>天气 · ${escapeHtml(d.weather.place)}</strong> <span class="${d.weather.pending ? "pending" : ""}">${escapeHtml(d.weather.text)}</span>${d.weather.source ? `<div>${escapeHtml(d.weather.source)}</div>` : `<div>出发前1–3天更新实际预报</div>`}</div>
     </div>
-    <div class="card highlights">
-      <h3>今日亮点</h3>
-      ${d.highlights.map(h => `<p>· ${h}</p>`).join("")}
+    <div class="card">
+      <h3>今日行程</h3>
+      <div class="timeline">${tlHtml}</div>
       ${hotelHtml}
     </div>
     <div class="card">
@@ -773,27 +1170,30 @@ function addDaily(day) {
   const input = document.getElementById("dailyInput");
   const v = input.value.trim();
   if (!v) return;
-  const list = getDailyTodos(day);
-  list.push({ id: Date.now(), text: v, done: false });
-  setDailyTodos(day, list);
+  const s = getState();
+  if (!s.daily["D" + day]) s.daily["D" + day] = [];
+  s.daily["D" + day].push({ id: Date.now(), text: v, done: false });
+  setState(s);
   renderTripDetail();
 }
 function toggleDaily(day, i) {
-  const list = getDailyTodos(day);
-  list[i].done = !list[i].done;
-  setDailyTodos(day, list);
+  const s = getState();
+  s.daily["D" + day][i].done = !s.daily["D" + day][i].done;
+  setState(s);
   renderTripDetail();
 }
 function deleteDaily(day, i) {
   if (!confirm("删除这条？")) return;
-  const list = getDailyTodos(day);
-  list.splice(i, 1);
-  setDailyTodos(day, list);
+  const s = getState();
+  s.daily["D" + day].splice(i, 1);
+  setState(s);
   renderTripDetail();
 }
 function saveNote(day) {
   const v = document.getElementById("noteArea").value;
-  setNote(day, v);
+  const s = getState();
+  s.notes["D" + day] = v;
+  setState(s);
 }
 function goNextDay() {
   if (currentDay < 9) {
@@ -811,10 +1211,20 @@ function escapeHtml(s) {
 }
 
 function renderAll() {
-  renderTodo();
-  renderTripTabs();
-  renderTripDetail();
+  try {
+    renderTodo();
+    renderTripTabs();
+    renderTripDetail();
+  } catch(e) {
+    console.error("页面渲染失败", e);
+    showStatus("页面加载失败，请重试；已保存的待办数据未清除");
+  }
 }
+document.addEventListener("click", event => {
+  if (openDropdownFor && !event.target.closest(".todo-entry")) closeDropdown();
+});
+// 最后启动，确保所有状态变量已完成初始化。
+init();
 </script>
 </body>
 </html>
