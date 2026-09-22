@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#E8833A">
+<title>北疆秋色 · 9日行助手</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #FAF6F0;
+    color: #2D2A26;
+    font-size: 15px;
+    line-height: 1.55;
+    padding-bottom: 80px; /* tab bar 高度 */
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; }
+
+  /* ===== 启动页 ===== */
+  #splash {
+    position: fixed; inset: 0; z-index: 100;
+    background: linear-gradient(160deg, #F5E6D3 0%, #FAF6F0 60%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  #splash .leaf { font-size: 56px; margin-bottom: 8px; }
+  #splash h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: 1px; }
+  #splash .sub { color: #8A8378; font-size: 14px; margin-bottom: 36px; }
+  #splash input {
+    width: 100%; max-width: 320px;
+    padding: 14px 16px; font-size: 16px;
+    border: 1.5px solid #E8D9C5; border-radius: 12px;
+    background: #fff; outline: none;
+  }
+  #splash input:focus { border-color: #E8833A; }
+  #splash .enter-btn {
+    margin-top: 16px; width: 100%; max-width: 320px;
+    padding: 14px; font-size: 16px; font-weight: 600; color: #fff;
+    background: #E8833A; border: none; border-radius: 12px;
+  }
+  #splash .enter-btn:active { background: #D1732A; }
+
+  /* ===== 顶栏 ===== */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: #FAF6F0;
+    padding: 14px 16px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .whoami { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #E8833A; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .switch-btn {
+    font-size: 13px; color: #8A8378;
+    background: #fff; border: 1px solid #EFE5D6;
+    padding: 6px 12px; border-radius: 999px;
+  }
+
+  /* ===== 进度条 ===== */
+  .progress-block { padding: 0 16px 12px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #8A8378; margin-bottom: 6px; }
+  .progress-bar { height: 6px; background: #EFE5D6; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #E8833A; border-radius: 3px; transition: width .3s; width: 0; }
+
+  /* ===== 分类跳转条 ===== */
+  .cat-nav {
+    position: sticky; top: 60px; z-index: 9;
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 6px 16px 10px;
+    background: #FAF6F0;
+    scrollbar-width: none;
+  }
+  .cat-nav::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    flex-shrink: 0;
+    padding: 6px 14px; border-radius: 999px;
+    background: #fff; border: 1px solid #EFE5D6;
+    font-size: 13px; color: #6B6459; white-space: nowrap;
+  }
+  .cat-pill.active { background: #E8833A; color: #fff; border-color: #E8833A; }
+
+  /* ===== 卡片 ===== */
+  .card {
+    background: #fff; border-radius: 16px;
+    margin: 0 16px 12px; padding: 16px;
+    box-shadow: 0 2px 8px rgba(120, 90, 50, 0.06);
+  }
+  .card.accent { border-left: 4px solid #E8833A; }
+  .card h3 { margin: 0 0 10px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .card h3 .count { font-size: 12px; color: #8A8378; font-weight: normal; }
+  .collapse-arrow { color: #B8A990; font-size: 12px; }
+
+  /* ===== 集合信息 ===== */
+  .meet-info p { margin: 6px 0; font-size: 14px; }
+  .meet-info .label { color: #8A8378; margin-right: 4px; }
+  .jump-link { color: #E8833A; font-weight: 500; }
+  .jump-link::after { content: " 📍"; font-size: 12px; }
+
+  /* ===== 待办项 ===== */
+  .todo-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F5EDE0;
+    min-height: 44px;
+  }
+  .todo-item:last-child { border-bottom: none; }
+  .checkbox {
+    width: 24px; height: 24px; border-radius: 6px;
+    border: 1.5px solid #D9CDB8; background: #fff;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .checkbox.checked { background: #E8833A; border-color: #E8833A; }
+  .checkbox.checked::after {
+    content: "✓"; color: #fff; font-size: 15px; font-weight: bold;
+  }
+  .todo-text { flex: 1; transition: all .2s; }
+  .todo-item.done .todo-text { color: #B8A990; text-decoration: line-through; }
+
+  .add-row {
+    display: flex; gap: 8px; margin-top: 10px;
+  }
+  .add-row input {
+    flex: 1; padding: 10px 12px;
+    border: 1px solid #EFE5D6; border-radius: 10px;
+    font-size: 14px; outline: none; background: #FDFAF5;
+  }
+  .add-row button {
+    padding: 0 16px; background: #E8833A; color: #fff;
+    border: none; border-radius: 10px; font-size: 14px;
+  }
+
+  .reset-btn {
+    display: block; margin: 20px auto;
+    color: #B8A990; font-size: 13px;
+    background: none; border: none;
+  }
+
+  /* ===== 行程 Tab ===== */
+  .day-tabs {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 6px 16px 12px;
+    scrollbar-width: none;
+  }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-pill {
+    flex-shrink: 0;
+    padding: 8px 14px; border-radius: 999px;
+    background: #fff; border: 1.5px solid #EFE5D6;
+    font-size: 13px; color: #6B6459;
+    min-width: 48px; text-align: center;
+  }
+  .day-pill.active { background: #E8833A; color: #fff; border-color: #E8833A; font-weight: 600; }
+  .day-pill.passed { opacity: 0.45; }
+
+  .trip-header h2 { margin: 0 0 4px; font-size: 19px; }
+  .trip-meta { display: flex; gap: 12px; color: #8A8378; font-size: 13px; margin-bottom: 12px; }
+  .trip-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .highlights p { margin: 8px 0; font-size: 14.5px; }
+  .hotel-row {
+    margin-top: 12px; padding: 12px;
+    background: #FDF3E7; border-radius: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .hotel-row .h-name { font-weight: 600; font-size: 14.5px; }
+  .hotel-row .h-sub { font-size: 12px; color: #8A8378; margin-top: 2px; }
+  .hotel-row .nav-arrow { color: #E8833A; font-size: 20px; }
+
+  .sub-section { margin-top: 16px; }
+  .sub-section h4 { margin: 0 0 8px; font-size: 14px; color: #6B6459; }
+  .note-area {
+    width: 100%; min-height: 72px;
+    padding: 10px 12px;
+    border: 1px solid #EFE5D6; border-radius: 10px;
+    background: #FDFAF5; font-size: 14px;
+    font-family: inherit; resize: vertical; outline: none;
+  }
+
+  .next-day-btn {
+    display: block; width: calc(100% - 32px);
+    margin: 16px; padding: 13px;
+    background: #fff; border: 1.5px solid #E8833A;
+    color: #E8833A; border-radius: 12px;
+    font-size: 15px; font-weight: 600;
+  }
+
+  /* ===== 联系人 ===== */
+  .contact-card {
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 16px 12px; padding: 16px;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(120, 90, 50, 0.06);
+  }
+  .contact-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #F5E6D3; color: #E8833A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .contact-info { flex: 1; }
+  .contact-info .c-name { font-weight: 600; font-size: 16px; }
+  .contact-info .c-role { font-size: 12px; color: #8A8378; }
+  .contact-info .c-phone { font-size: 13px; color: #6B6459; margin-top: 2px; }
+  .call-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #34C759; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .emergency-tip {
+    text-align: center; color: #8A8378; font-size: 13px;
+    margin-top: 24px;
+  }
+
+  /* ===== 底部 Tab ===== */
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 64px; background: #fff;
+    border-top: 1px solid #F0E8DA;
+    display: flex; z-index: 20;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #B8A990; font-size: 11px; gap: 2px;
+  }
+  .tab-item .icon { font-size: 22px; }
+  .tab-item.active { color: #E8833A; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- 启动页 -->
+<div id="splash">
+  <div class="leaf">🍂</div>
+  <h1>北疆秋色 9 日行</h1>
+  <div class="sub">赵雨萌的旅行小助手</div>
+  <input id="nicknameInput" type="text" placeholder="你的昵称是？" maxlength="12" autocomplete="off">
+  <button class="enter-btn" onclick="enterApp()">进入行程 →</button>
+</div>
+
+<!-- 主界面 -->
+<div id="app" class="hidden">
+
+  <!-- 顶栏 -->
+  <div class="topbar">
+    <div class="whoami">
+      <div class="avatar" id="avatarChar">雨</div>
+      <span id="nicknameLabel">雨萌</span>
+    </div>
+    <button class="switch-btn" onclick="switchNickname()">切换</button>
+  </div>
+
+  <!-- Tab 1: 待办清单 -->
+  <div class="page" id="page-todo">
+    <div class="progress-block">
+      <div class="progress-label">
+        <span>已打包</span>
+        <span id="progressText">0/0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="cat-nav" id="catNav"></div>
+
+    <!-- 集合信息 -->
+    <div class="card accent" id="cat-meet">
+      <h3>集合信息</h3>
+      <div class="meet-info">
+        <p><span class="label">时间</span>2026.9.24（周四）</p>
+        <p><span class="label">酒店</span>
+          <a class="jump-link" href="https://uri.amap.com/search?keyword=%E4%BC%8A%E5%8A%9B%E7%89%B9%E9%85%92%E5%BA%97%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90%E7%81%AB%E8%BD%A6%E5%8D%97%E7%AB%99%E5%BE%B7%E6%B1%87%E4%B8%87%E8%BE%BE%E5%BA%97&city=%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90&callnative=1" target="_blank">伊力特酒店（乌鲁木齐火车南站德汇万达店）</a>
+        </p>
+        <p><span class="label">入住</span>14:00 后办理，早到可前台寄存行李</p>
+        <p><span class="label">交通</span>机场打车约 35 分钟；或机场巴士 2 号线 9 站长江路站下步行 400 米</p>
+        <p><span class="label">天气</span>9.24 乌鲁木齐 ☀ 晴 14–23℃</p>
+      </div>
+    </div>
+
+    <!-- 动态分类卡片由 JS 渲染 -->
+    <div id="todoCards"></div>
+
+    <!-- 我的自定义待办 -->
+    <div class="card" id="cat-custom">
+      <h3>我的待办 <span class="count">私人</span></h3>
+      <div id="customList"></div>
+      <div class="add-row">
+        <input id="customInput" placeholder="+ 加一条..." maxlength="50">
+        <button onclick="addCustom()">添加</button>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">重置全部勾选</button>
+  </div>
+
+  <!-- Tab 2: 每日行程 -->
+  <div class="page" id="page-trip">
+    <div class="day-tabs" id="dayTabs"></div>
+    <div id="tripDetail"></div>
+  </div>
+
+  <!-- Tab 3: 联系人 -->
+  <div class="page" id="page-contact">
+    <div class="card" style="margin-top:8px;">
+      <h3>紧急联系</h3>
+    </div>
+    <div class="contact-card">
+      <div class="contact-avatar">👤</div>
+      <div class="contact-info">
+        <div class="c-name">春春</div>
+        <div class="c-role">领队</div>
+        <div class="c-phone">183 8240 8097</div>
+      </div>
+      <a class="call-btn" href="tel:18382408097">📞</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-avatar">👤</div>
+      <div class="contact-info">
+        <div class="c-name">喜洋洋</div>
+        <div class="c-role">导游</div>
+        <div class="c-phone">152 7663 3828</div>
+      </div>
+      <a class="call-btn" href="tel:15276633828">📞</a>
+    </div>
+    <div class="emergency-tip">紧急情况先打领队，再打导游</div>
+  </div>
+
+  <!-- 底部 Tab -->
+  <div class="tabbar">
+    <div class="tab-item active" data-tab="todo" onclick="switchTab('todo')">
+      <div class="icon">📋</div><div>待办</div>
+    </div>
+    <div class="tab-item" data-tab="trip" onclick="switchTab('trip')">
+      <div class="icon">🗺️</div><div>行程</div>
+    </div>
+    <div class="tab-item" data-tab="contact" onclick="switchTab('contact')">
+      <div class="icon">📞</div><div>联系</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ 数据 ============
+const TODO_CATEGORIES = [
+  {
+    id: "cloth", name: "衣物", icon: "🧥",
+    items: ["长袖长裤", "冲锋衣+抓绒/薄羽绒", "秋衣秋裤", "中高帮户外鞋（防滑保暖防水最佳）", "运动鞋", "线帽", "遮阳帽"]
+  },
+  {
+    id: "medicine", name: "药物", icon: "💊",
+    items: ["感冒药", "消炎药", "晕车药", "驱蚊水", "风油精", "脱敏药", "红霉素软膏", "个人常用药"]
+  },
+  {
+    id: "id", name: "证件钱物", icon: "🪪",
+    items: ["身份证", "军官证/残疾证等优惠证件", "少量零钱（部分地方信号不好）"]
+  },
+  {
+    id: "other", name: "其他物品", icon: "🎒",
+    items: ["充电宝", "保温杯", "太阳镜", "润唇膏", "防晒霜", "雨具（建议雨衣）", "1-2日分装小背包"]
+  },
+  {
+    id: "notice", name: "注意事项", icon: "📌",
+    items: ["自备一次性洗漱用品、拖鞋", "贵重物品随身携带", "带水杯多喝温水", "车上备U型枕", "备路上零食"]
+  }
+];
+
+// 行程数据（酒店名先用通知里的参考名占位）
+const TRIP_DAYS = [
+  {
+    day: 1, date: "9.24 周四", title: "各地 → 乌鲁木齐",
+    drive: "—", meal: "不含，三餐自理",
+    hotel: "伊力特酒店（乌鲁木齐4钻）", hotelKeyword: "伊力特酒店乌鲁木齐火车南站德汇万达店",
+    highlights: [
+      "全天集合，报「游侠客+姓名」办理入住",
+      "时间充裕可逛：新疆博物馆（免费，周一闭馆）或国际大巴扎",
+      "晚上大巴扎夜市：大盘鸡、烤羊排、烤羊肉串、马肠子"
+    ]
+  },
+  {
+    day: 2, date: "9.25 周五", title: "乌鲁木齐 → 赛里木湖",
+    drive: "约550km · 全程高速", meal: "含早，正餐自理",
+    hotel: "赛里木湖景区门口酒店", hotelKeyword: "赛里木湖中亚全纳酒店",
+    highlights: [
+      "「大西洋最后一滴眼泪」，湖面湛蓝，雪山环抱",
+      "湖边守候日落晚霞，晴朗夜可观银河星空",
+      "住景区门口稀缺资源酒店"
+    ]
+  },
+  {
+    day: 3, date: "9.26 周六", title: "赛里木湖 → 奎屯",
+    drive: "约400km · 环湖路+高速", meal: "含早，正餐自理",
+    hotel: "奎屯龙泽惠理酒店同级（4钻）", hotelKeyword: "奎屯龙泽惠理酒店",
+    highlights: [
+      "大巴车 360° 环湖，不同角度赏湖",
+      "帆船游湖 + 湖畔下午茶，幸运可见天鹅",
+      "游玩尽兴后驱车前往奎屯"
+    ]
+  },
+  {
+    day: 4, date: "9.27 周日", title: "奎屯 → 乌尔禾 → 布尔津",
+    drive: "约460km · 高速为主", meal: "含早，正餐自理",
+    hotel: "布尔津神湖酒店同级（4钻）", hotelKeyword: "布尔津神湖酒店",
+    highlights: [
+      "上午：乌尔禾秘境胡杨林，私家踩线点",
+      "下午：乌尔禾魔鬼城，中国最美雅丹",
+      "晚上抵达俄罗斯风情小镇布尔津，自由觅食"
+    ]
+  },
+  {
+    day: 5, date: "9.28 周一", title: "布尔津 → 五彩滩 → 白哈巴",
+    drive: "约170km", meal: "含早，赠送一正餐",
+    hotel: "白哈巴景区内图瓦木屋", hotelKeyword: "白哈巴村",
+    highlights: [
+      "上午：五彩滩临水雅丹，额尔齐斯河畔",
+      "西线铁热克提进白哈巴，走中哈边境公路秋色",
+      "途经呼吉尔特转场道，运气好可见牛羊大转场",
+      "晚上住图瓦木屋，看边陲星空"
+    ]
+  },
+  {
+    day: 6, date: "9.29 周二", title: "白哈巴 → 喀纳斯",
+    drive: "约60km · 景区公路", meal: "含早，正餐自理",
+    hotel: "喀纳斯景区内图瓦木屋", hotelKeyword: "喀纳斯景区",
+    highlights: [
+      "早起可看村口观景台晨雾炊烟",
+      "上午：喀纳斯湖边栈道漫步",
+      "下午：登观鱼台俯瞰喀纳斯湖，远眺友谊峰"
+    ]
+  },
+  {
+    day: 7, date: "9.30 周三", title: "喀纳斯 → 禾木",
+    drive: "约60km · 景区公路", meal: "含早，正餐自理",
+    hotel: "禾木老村图瓦木屋（核心地段）", hotelKeyword: "禾木村",
+    highlights: [
+      "早晨：神仙湾梦幻晨雾（住景区内优势）",
+      "上午：月亮湾→卧龙湾 3km 轻徒步",
+      "下午：禾木河畔白桦林自由漫步",
+      "傍晚：禾木日落观景台看炊烟牧归"
+    ]
+  },
+  {
+    day: 8, date: "10.1 周四", title: "禾木 → 阿禾公路 → 阿勒泰",
+    drive: "约200km", meal: "含早，正餐自理",
+    hotel: "阿勒泰桔子水晶酒店同级（4钻）", hotelKeyword: "阿勒泰桔子水晶酒店",
+    highlights: [
+      "清晨：哈登观景台看禾木日出晨雾",
+      "穿越阿禾公路208km边境公路，号称「小独库」",
+      "可能邂逅小狐狸；晚上不建议订航班离开"
+    ]
+  },
+  {
+    day: 9, date: "10.2 周五", title: "阿勒泰 → 乌鲁木齐（解散）",
+    drive: "约500km · 全程高速", meal: "含早，正餐自理",
+    hotel: null, hotelKeyword: null,
+    highlights: [
+      "穿越古尔班通古特沙漠返回乌鲁木齐",
+      "预计 15:00 抵达，请订 17:00 之后的机票/火车",
+      "也可选择阿勒泰机场直接离团飞走"
+    ]
+  }
+];
+
+// ============ 状态 ============
+let nickname = "";
+let currentDay = 1;
+
+function lsGet(key, def) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? def; }
+  catch(e) { return def; }
+}
+function lsSet(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+function todoKey() { return "xj_todo_" + nickname; }
+function customKey() { return "xj_custom_" + nickname; }
+function dailyKey(d) { return "xj_daily_" + nickname + "_D" + d; }
+function noteKey(d) { return "xj_note_" + nickname + "_D" + d; }
+
+function getTodoState() { return lsGet(todoKey(), {}); }
+function setTodoState(s) { lsSet(todoKey(), s); }
+function getCustom() { return lsGet(customKey(), []); }
+function setCustom(a) { lsSet(customKey(), a); }
+function getDailyTodos(d) { return lsGet(dailyKey(d), []); }
+function setDailyTodos(d, a) { lsSet(dailyKey(d), a); }
+function getNote(d) { return lsGet(noteKey(d), ""); }
+function setNote(d, t) { lsSet(noteKey(d), t); }
+
+// ============ 启动 ============
+function enterApp() {
+  const v = document.getElementById("nicknameInput").value.trim();
+  if (!v) { alert("请输入昵称"); return; }
+  nickname = v;
+  localStorage.setItem("xj_trip_nickname", JSON.stringify(nickname));
+  document.getElementById("splash").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("nicknameLabel").textContent = nickname;
+  document.getElementById("avatarChar").textContent = nickname[0].toUpperCase();
+  renderAll();
+}
+
+function switchNickname() {
+  if (confirm("切换昵称？当前勾选会保留在原昵称下")) {
+    localStorage.removeItem("xj_trip_nickname");
+    location.reload();
+  }
+}
+
+// 恢复昵称
+(function init() {
+  const saved = localStorage.getItem("xj_trip_nickname");
+  if (saved) {
+    try {
+      const n = JSON.parse(saved);
+      if (n) {
+        nickname = n;
+        document.getElementById("splash").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+        document.getElementById("nicknameLabel").textContent = nickname;
+        document.getElementById("avatarChar").textContent = nickname[0].toUpperCase();
+        // 自动定位今天
+        currentDay = guessToday();
+        renderAll();
+        return;
+      }
+    } catch(e) {}
+  }
+  // 没昵称，停留 splash
+  currentDay = guessToday();
+  document.getElementById("nicknameInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") enterApp();
+  });
+})();
+
+function guessToday() {
+  const start = new Date(2026, 8, 24); // 9.24
+  const now = new Date();
+  const diff = Math.floor((now - start) / 86400000) + 1;
+  if (diff < 1) return 1;
+  if (diff > 9) return 9;
+  return diff;
+}
+
+// ============ Tab 切换 ============
+function switchTab(name) {
+  document.querySelectorAll(".tab-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.tab === name);
+  });
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// ============ 待办渲染 ============
+function renderTodo() {
+  const state = getTodoState();
+  const cardsEl = document.getElementById("todoCards");
+  cardsEl.innerHTML = "";
+  let total = 0, done = 0;
+
+  TODO_CATEGORIES.forEach(cat => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.id = "cat-" + cat.id;
+
+    let itemsHtml = "";
+    cat.items.forEach((item, idx) => {
+      const key = cat.id + "_" + idx;
+      const checked = !!state[key];
+      total++;
+      if (checked) done++;
+      itemsHtml += `
+        <div class="todo-item ${checked ? "done" : ""}" onclick="toggleTodo('${key}')">
+          <div class="checkbox ${checked ? "checked" : ""}"></div>
+          <div class="todo-text">${item}</div>
+        </div>`;
+    });
+
+    card.innerHTML = `
+      <h3><span>${cat.icon} ${cat.name}</span><span class="count">${cat.items.length} 项</span></h3>
+      ${itemsHtml}`;
+    cardsEl.appendChild(card);
+  });
+
+  // 进度
+  document.getElementById("progressText").textContent = done + "/" + total;
+  document.getElementById("progressFill").style.width = (total ? done/total*100 : 0) + "%";
+
+  renderCatNav();
+  renderCustom();
+}
+
+function toggleTodo(key) {
+  const s = getTodoState();
+  s[key] = !s[key];
+  setTodoState(s);
+  renderTodo();
+}
+
+function renderCatNav() {
+  const nav = document.getElementById("catNav");
+  nav.innerHTML = `<div class="cat-pill active" onclick="scrollTop(this)">全部</div>`;
+  TODO_CATEGORIES.forEach(cat => {
+    const pill = document.createElement("div");
+    pill.className = "cat-pill";
+    pill.textContent = cat.name;
+    pill.dataset.target = "cat-" + cat.id;
+    pill.onclick = () => scrollToCat(pill);
+    nav.appendChild(pill);
+  });
+}
+
+function scrollToCat(pill) {
+  document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
+  pill.classList.add("active");
+  const target = document.getElementById(pill.dataset.target);
+  if (target) {
+    const y = target.getBoundingClientRect().top + window.scrollY - 130;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  }
+}
+function scrollTop(pill) {
+  document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
+  pill.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderCustom() {
+  const list = getCustom();
+  const el = document.getElementById("customList");
+  el.innerHTML = "";
+  if (list.length === 0) {
+    el.innerHTML = `<div style="color:#B8A990;font-size:13px;padding:4px 0">还没有，加一条吧</div>`;
+    return;
+  }
+  list.forEach((item, i) => {
+    const row = document.createElement("div");
+    row.className = "todo-item" + (item.done ? " done" : "");
+    row.innerHTML = `
+      <div class="checkbox ${item.done ? "checked" : ""}" onclick="toggleCustom(${i})"></div>
+      <div class="todo-text" onclick="toggleCustom(${i})">${escapeHtml(item.text)}</div>
+      <div style="color:#D9CDB8;font-size:18px;padding:0 4px" onclick="deleteCustom(${i})">×</div>`;
+    el.appendChild(row);
+  });
+}
+
+function toggleCustom(i) {
+  const list = getCustom();
+  list[i].done = !list[i].done;
+  setCustom(list);
+  renderCustom();
+}
+function deleteCustom(i) {
+  if (!confirm("删除这条待办？")) return;
+  const list = getCustom();
+  list.splice(i, 1);
+  setCustom(list);
+  renderCustom();
+}
+function addCustom() {
+  const input = document.getElementById("customInput");
+  const v = input.value.trim();
+  if (!v) return;
+  const list = getCustom();
+  list.push({ id: Date.now(), text: v, done: false });
+  setCustom(list);
+  input.value = "";
+  renderCustom();
+}
+
+function resetAll() {
+  if (!confirm("确定清空所有勾选？自定义待办和每日备注不受影响")) return;
+  setTodoState({});
+  renderTodo();
+}
+
+// ============ 行程渲染 ============
+function renderTripTabs() {
+  const el = document.getElementById("dayTabs");
+  el.innerHTML = "";
+  TRIP_DAYS.forEach(d => {
+    const pill = document.createElement("div");
+    pill.className = "day-pill" + (d.day === currentDay ? " active" : "");
+    if (d.day < guessToday()) pill.classList.add("passed");
+    pill.textContent = "D" + d.day;
+    pill.onclick = () => { currentDay = d.day; renderTripTabs(); renderTripDetail(); };
+    el.appendChild(pill);
+  });
+  // 自动滚动到当前
+  const active = el.querySelector(".day-pill.active");
+  if (active) active.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}
+
+function renderTripDetail() {
+  const d = TRIP_DAYS[currentDay - 1];
+  const el = document.getElementById("tripDetail");
+  const amapUrl = (kw) => "https://uri.amap.com/search?keyword=" + encodeURIComponent(kw) + "&city=" + encodeURIComponent("新疆") + "&callnative=1";
+
+  let hotelHtml = "";
+  if (d.hotel) {
+    hotelHtml = `
+      <a class="hotel-row" href="${amapUrl(d.hotelKeyword)}" target="_blank">
+        <div>
+          <div class="h-name">🏨 ${d.hotel}</div>
+          <div class="h-sub">点这里在高德打开</div>
+        </div>
+        <div class="nav-arrow">›</div>
+      </a>`;
+  }
+
+  // 当日待办
+  const daily = getDailyTodos(d.day);
+  let dailyHtml = "";
+  daily.forEach((t, i) => {
+    dailyHtml += `
+      <div class="todo-item ${t.done ? "done" : ""}" onclick="toggleDaily(${d.day}, ${i})">
+        <div class="checkbox ${t.done ? "checked" : ""}"></div>
+        <div class="todo-text">${escapeHtml(t.text)}</div>
+        <div style="color:#D9CDB8;font-size:18px;padding:0 4px" onclick="deleteDaily(${d.day}, ${i})">×</div>
+      </div>`;
+  });
+
+  // 备注
+  const note = getNote(d.day);
+
+  el.innerHTML = `
+    <div class="card trip-header">
+      <h2>D${d.day} · ${d.title}</h2>
+      <div class="trip-meta">
+        <span>🚗 ${d.drive}</span>
+        <span>🍽 ${d.meal}</span>
+      </div>
+    </div>
+    <div class="card highlights">
+      <h3>今日亮点</h3>
+      ${d.highlights.map(h => `<p>· ${h}</p>`).join("")}
+      ${hotelHtml}
+    </div>
+    <div class="card">
+      <div class="sub-section">
+        <h4>✅ 当日待办（仅自己可见）</h4>
+        ${dailyHtml || `<div style="color:#B8A990;font-size:13px;padding:4px 0">今天还没有待办，加一条</div>`}
+        <div class="add-row">
+          <input id="dailyInput" placeholder="+ 今天要做..." maxlength="50">
+          <button onclick="addDaily(${d.day})">添加</button>
+        </div>
+      </div>
+      <div class="sub-section">
+        <h4>📝 私人备注</h4>
+        <textarea class="note-area" id="noteArea" placeholder="记点什么..." oninput="saveNote(${d.day})">${escapeHtml(note)}</textarea>
+      </div>
+    </div>
+    ${d.day < 9 ? `<button class="next-day-btn" onclick="goNextDay()">下一天 D${d.day+1} →</button>` : `<div style="text-align:center;color:#B8A990;padding:20px">🎉 行程结束，平安到家</div>`}
+  `;
+}
+
+function addDaily(day) {
+  const input = document.getElementById("dailyInput");
+  const v = input.value.trim();
+  if (!v) return;
+  const list = getDailyTodos(day);
+  list.push({ id: Date.now(), text: v, done: false });
+  setDailyTodos(day, list);
+  renderTripDetail();
+}
+function toggleDaily(day, i) {
+  const list = getDailyTodos(day);
+  list[i].done = !list[i].done;
+  setDailyTodos(day, list);
+  renderTripDetail();
+}
+function deleteDaily(day, i) {
+  if (!confirm("删除这条？")) return;
+  const list = getDailyTodos(day);
+  list.splice(i, 1);
+  setDailyTodos(day, list);
+  renderTripDetail();
+}
+function saveNote(day) {
+  const v = document.getElementById("noteArea").value;
+  setNote(day, v);
+}
+function goNextDay() {
+  if (currentDay < 9) {
+    currentDay++;
+    renderTripTabs();
+    renderTripDetail();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function renderAll() {
+  renderTodo();
+  renderTripTabs();
+  renderTripDetail();
+}
+</script>
+</body>
+</html>
