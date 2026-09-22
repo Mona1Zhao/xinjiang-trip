@@ -38,7 +38,11 @@
     border: 1.5px solid #E8D9C5; border-radius: 12px;
     background: #fff; outline: none;
   }
+  #splash input + input { margin-top: 10px; }
   #splash input:focus { border-color: #E8833A; }
+  .login-hint { max-width: 320px; margin-top: 12px; color: #8A8378; font-size: 12px; text-align: center; }
+  .login-error { max-width: 320px; min-height: 20px; margin-top: 8px; color: #B42318; font-size: 13px; text-align: center; }
+  .enter-btn[disabled] { opacity: .65; cursor: wait; }
   #splash .enter-btn {
     margin-top: 16px; width: 100%; max-width: 320px;
     padding: 14px; font-size: 16px; font-weight: 600; color: #fff;
@@ -54,6 +58,11 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .whoami { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .identity-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .sync-status { margin-top: 3px; color: #8A8378; font-size: 11px; font-weight: 400; cursor: pointer; }
+  .sync-status[data-state="syncing"] { color: #B75B1D; }
+  .sync-status[data-state="error"] { color: #B42318; }
+  .sync-status[data-state="offline"] { color: #8A8378; }
   .avatar {
     width: 32px; height: 32px; border-radius: 50%;
     background: #E8833A; color: #fff;
@@ -353,17 +362,22 @@
   <div class="leaf">🍂</div>
   <h1>北疆秋色 9 日行</h1>
   <div class="sub">赵雨萌的旅行小助手</div>
-  <input id="nicknameInput" type="text" placeholder="你的昵称是？" maxlength="12" autocomplete="off">
-  <button class="enter-btn" onclick="enterApp()">进入行程 →</button>
+  <form id="loginForm" onsubmit="event.preventDefault(); enterApp()" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+    <input id="nicknameInput" name="nickname" type="text" placeholder="你的昵称" maxlength="12" autocomplete="nickname">
+    <input id="pinInput" name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" placeholder="6位安全码" maxlength="6" autocomplete="current-password">
+    <button class="enter-btn" id="enterBtn" type="submit">进入我的行程 →</button>
+  </form>
+  <div class="login-hint">首次使用会自动创建；换设备输入相同昵称和安全码，即可恢复历史记录。安全码无法找回，请自行记住。</div>
+  <div class="login-error" id="loginError" role="alert"></div>
 </div>
 
 <div id="app" class="hidden">
   <div class="topbar">
     <div class="whoami">
       <div class="avatar" id="avatarChar">雨</div>
-      <span id="nicknameLabel">雨萌</span>
+      <div class="identity-text"><span id="nicknameLabel">雨萌</span><span class="sync-status" id="syncStatus" data-state="syncing" onclick="manualSync()">同步中</span></div>
     </div>
-    <button class="switch-btn" onclick="switchNickname()">切换</button>
+    <button class="switch-btn" onclick="switchNickname()">切换用户</button>
   </div>
 
   <!-- Tab 1: 待办 -->
@@ -443,6 +457,13 @@
 <script>
 let openDropdownFor = null;
 let statusTimer = null;
+let syncTimer = null;
+let syncBusy = false;
+let suppressSync = false;
+let syncSession = null;
+let syncRevision = 0;
+const SUPABASE_URL = "https://ttudybgupxdpvggarjnk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_dx4p1g3-XvGSkIlfOqZx4A_Lg19bdFK";
 // ============ 数据 ============
 const DEFAULT_CATEGORIES = [
   { id: "cloth", name: "衣物", icon: "🧥" },
@@ -602,7 +623,7 @@ const TRIP_DAYS = [
   }
 ];
 
-// ============ 状态 ============
+// ============ 状态与云同步 ============
 let nickname = "";
 let currentDay = 1;
 
@@ -611,80 +632,230 @@ function lsGet(key, def) {
   catch(e) { return def; }
 }
 function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-
-// 存储 key
-function sKey() { return "xj_state_" + nickname; }
-function getState() {
-  const def = { checked:{}, deletedItems:[], deletedCats:[], catOverrides:{}, customCats:[], custom:[], daily:{}, notes:{} };
-  const saved = lsGet(sKey(), null);
+function legacyStateKey(name=nickname) { return "xj_state_" + name; }
+function sKey() { return syncSession?.profileId ? "xj_state_profile_" + syncSession.profileId : legacyStateKey(); }
+function defaultState() {
+  return { schemaVersion:2, checked:{}, deletedItems:[], deletedCats:[], catOverrides:{}, customCats:[], custom:[], daily:{}, notes:{}, _groupUpdated:{}, _itemUpdated:{} };
+}
+function normalizeState(saved) {
+  const def=defaultState();
   if (!saved) return def;
-  // 合并默认值，旧数据缺新字段时自动补
   return { ...def, ...saved,
-    checked: saved.checked || {},
-    catOverrides: saved.catOverrides || {},
-    deletedItems: saved.deletedItems || [],
-    deletedCats: saved.deletedCats || [],
-    customCats: saved.customCats || [],
-    custom: saved.custom || [],
-    daily: saved.daily || {},
-    notes: saved.notes || {}
+    checked:saved.checked||{}, deletedItems:saved.deletedItems||[], deletedCats:saved.deletedCats||[],
+    catOverrides:saved.catOverrides||{}, customCats:saved.customCats||[], custom:saved.custom||[],
+    daily:saved.daily||{}, notes:saved.notes||{}, _groupUpdated:saved._groupUpdated||{}, _itemUpdated:saved._itemUpdated||{}
   };
 }
-function setState(s) { lsSet(sKey(), s); }
-
-// ============ 启动 ============
-function enterApp() {
-  const v = document.getElementById("nicknameInput").value.trim();
-  if (!v) { alert("请输入昵称"); return; }
-  nickname = v;
-  localStorage.setItem("xj_trip_nickname", JSON.stringify(nickname));
-  document.getElementById("splash").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
-  document.getElementById("nicknameLabel").textContent = nickname;
-  document.getElementById("avatarChar").textContent = nickname[0].toUpperCase();
-  currentDay = guessToday();
-  renderAll();
-  switchTab("todo");
+function getState() { return normalizeState(lsGet(sKey(), null)); }
+function stableJson(v) { try { return JSON.stringify(v); } catch(e) { return ""; } }
+function byId(list) { return new Map((list||[]).map(v=>[String(v.id),v])); }
+function changeKey(group,id,day="") { return day ? `${group}:${day}:${id}` : `${group}:${id}`; }
+function changed(prev,next) { return stableJson(prev)!==stableJson(next); }
+function stampChangedGroups(prev,next) {
+  const groups=["checked","deletedItems","deletedCats","catOverrides","customCats","custom","daily","notes"];
+  next._groupUpdated={...(prev._groupUpdated||{}),...(next._groupUpdated||{})};
+  next._itemUpdated={...(prev._itemUpdated||{}),...(next._itemUpdated||{})};
+  const now=new Date().toISOString();
+  groups.forEach(g=>{ if(changed(prev[g],next[g])) next._groupUpdated[g]=now; });
+  ["checked","catOverrides","notes"].forEach(g=>{
+    new Set([...Object.keys(prev[g]||{}),...Object.keys(next[g]||{})]).forEach(id=>{
+      if(changed(prev[g]?.[id],next[g]?.[id])) next._itemUpdated[changeKey(g,id)]=now;
+    });
+  });
+  ["deletedItems","deletedCats"].forEach(g=>{
+    const a=new Set(prev[g]||[]), b=new Set(next[g]||[]);
+    new Set([...a,...b]).forEach(id=>{ if(a.has(id)!==b.has(id)) next._itemUpdated[changeKey(g,id)]=now; });
+  });
+  ["customCats","custom"].forEach(g=>{
+    const a=byId(prev[g]), b=byId(next[g]);
+    new Set([...a.keys(),...b.keys()]).forEach(id=>{ if(changed(a.get(id),b.get(id))) next._itemUpdated[changeKey(g,id)]=now; });
+  });
+  new Set([...Object.keys(prev.daily||{}),...Object.keys(next.daily||{})]).forEach(day=>{
+    const a=byId(prev.daily?.[day]), b=byId(next.daily?.[day]);
+    new Set([...a.keys(),...b.keys()]).forEach(id=>{ if(changed(a.get(id),b.get(id))) next._itemUpdated[changeKey("daily",id,day)]=now; });
+  });
+  next.schemaVersion=2;
+  return next;
 }
-
-function switchNickname() {
-  if (confirm("切换昵称？当前数据会保留在原昵称下")) {
-    localStorage.removeItem("xj_trip_nickname");
-    location.reload();
-  }
+function setState(next) {
+  const prev=normalizeState(lsGet(sKey(),null));
+  const stamped=suppressSync?normalizeState(next):stampChangedGroups(prev,normalizeState(next));
+  lsSet(sKey(),stamped);
+  if(!suppressSync && syncSession) scheduleSync();
 }
-
-function init() {
-  const saved = localStorage.getItem("xj_trip_nickname");
-  if (saved) {
-    try {
-      const n = JSON.parse(saved);
-      if (n) {
-        nickname = n;
-        document.getElementById("splash").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
-        document.getElementById("nicknameLabel").textContent = nickname;
-        document.getElementById("avatarChar").textContent = nickname[0].toUpperCase();
-        currentDay = guessToday();
-        renderAll();
-        switchTab("todo");
-        return;
-      }
-    } catch(e) {}
-  }
-  currentDay = guessToday();
-  document.getElementById("nicknameInput").addEventListener("keydown", e => {
-    if (e.key === "Enter") enterApp();
+function itemTime(state,key,group) {
+  return Date.parse(state._itemUpdated?.[key]||state._groupUpdated?.[group]||0)||0;
+}
+function pick(local,cloud,key,group,localValue,cloudValue) {
+  const lt=itemTime(local,key,group), ct=itemTime(cloud,key,group);
+  return lt>=ct ? {value:localValue,time:local._itemUpdated?.[key]||local._groupUpdated?.[group]} : {value:cloudValue,time:cloud._itemUpdated?.[key]||cloud._groupUpdated?.[group]};
+}
+function mergeObjectGroup(local,cloud,out,group) {
+  out[group]={};
+  new Set([...Object.keys(local[group]||{}),...Object.keys(cloud[group]||{})]).forEach(id=>{
+    const key=changeKey(group,id), chosen=pick(local,cloud,key,group,local[group]?.[id],cloud[group]?.[id]);
+    if(chosen.value!==undefined) out[group][id]=chosen.value;
+    if(chosen.time) out._itemUpdated[key]=chosen.time;
   });
 }
+function mergeMembershipGroup(local,cloud,out,group) {
+  const a=new Set(local[group]||[]), b=new Set(cloud[group]||[]), merged=[];
+  new Set([...a,...b]).forEach(id=>{
+    const key=changeKey(group,id), chosen=pick(local,cloud,key,group,a.has(id),b.has(id));
+    if(chosen.value) merged.push(id);
+    if(chosen.time) out._itemUpdated[key]=chosen.time;
+  });
+  out[group]=merged;
+}
+function mergeEntityGroup(local,cloud,out,group) {
+  const a=byId(local[group]), b=byId(cloud[group]), merged=[];
+  new Set([...a.keys(),...b.keys()]).forEach(id=>{
+    const key=changeKey(group,id), chosen=pick(local,cloud,key,group,a.get(id),b.get(id));
+    if(chosen.value!==undefined) merged.push(chosen.value);
+    if(chosen.time) out._itemUpdated[key]=chosen.time;
+  });
+  out[group]=merged;
+}
+function mergeDaily(local,cloud,out) {
+  out.daily={};
+  new Set([...Object.keys(local.daily||{}),...Object.keys(cloud.daily||{})]).forEach(day=>{
+    const a=byId(local.daily?.[day]), b=byId(cloud.daily?.[day]), merged=[];
+    new Set([...a.keys(),...b.keys()]).forEach(id=>{
+      const key=changeKey("daily",id,day), chosen=pick(local,cloud,key,"daily",a.get(id),b.get(id));
+      if(chosen.value!==undefined) merged.push(chosen.value);
+      if(chosen.time) out._itemUpdated[key]=chosen.time;
+    });
+    if(merged.length) out.daily[day]=merged;
+  });
+}
+function mergeStates(localState,cloudState) {
+  const local=normalizeState(localState), cloud=normalizeState(cloudState), out=defaultState();
+  mergeObjectGroup(local,cloud,out,"checked");
+  mergeMembershipGroup(local,cloud,out,"deletedItems");
+  mergeMembershipGroup(local,cloud,out,"deletedCats");
+  mergeObjectGroup(local,cloud,out,"catOverrides");
+  mergeEntityGroup(local,cloud,out,"customCats");
+  mergeEntityGroup(local,cloud,out,"custom");
+  mergeDaily(local,cloud,out);
+  mergeObjectGroup(local,cloud,out,"notes");
+  const groups=["checked","deletedItems","deletedCats","catOverrides","customCats","custom","daily","notes"];
+  groups.forEach(g=>out._groupUpdated[g]=(Date.parse(local._groupUpdated[g]||0)||0)>=(Date.parse(cloud._groupUpdated[g]||0)||0)?local._groupUpdated[g]:cloud._groupUpdated[g]);
+  return out;
+}
+async function rpc(name,params) {
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
+    method:"POST",
+    headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
+    body:JSON.stringify(params)
+  });
+  const text=await response.text();
+  let data=null; try{data=text?JSON.parse(text):null}catch(e){}
+  if(!response.ok) throw new Error(data?.message||data?.error_description||"云端请求失败");
+  return data;
+}
+function setSyncStatus(text,state="ok") {
+  const el=document.getElementById("syncStatus");
+  if(!el)return; el.textContent=text; el.dataset.state=state;
+}
+function saveSession(data) {
+  syncSession={token:data.session_token,profileId:data.profile_id,nickname:data.nickname,expiresAt:data.session_expires_at};
+  syncRevision=Number(data.revision||1);
+  lsSet("xj_sync_session",syncSession);
+  localStorage.setItem("xj_trip_nickname",JSON.stringify(data.nickname));
+}
+async function enterApp() {
+  const name=document.getElementById("nicknameInput").value.trim();
+  const pin=document.getElementById("pinInput").value.trim();
+  const error=document.getElementById("loginError"), btn=document.getElementById("enterBtn");
+  error.textContent="";
+  if(!name){error.textContent="请输入昵称";return;}
+  if(!/^\d{6}$/.test(pin)){error.textContent="请输入6位数字安全码";return;}
+  btn.disabled=true; btn.textContent="正在连接…";
+  nickname=name;
+  try{
+    const legacyRaw=lsGet(legacyStateKey(name),null);
+    let local=normalizeState(legacyRaw);
+    if(legacyRaw && !Object.keys(local._groupUpdated).length){
+      const now=new Date().toISOString();
+      ["checked","deletedItems","deletedCats","catOverrides","customCats","custom","daily","notes"].forEach(g=>local._groupUpdated[g]=now);
+    }
+    const data=await rpc("enter_sync",{p_nickname:name,p_pin:pin,p_initial_state:local});
+    saveSession(data);
+    nickname=data.nickname;
+    const cloud=normalizeState(data.state);
+    const merged=data.is_new ? local : (legacyRaw ? mergeStates(local,cloud) : cloud);
+    suppressSync=true; lsSet(sKey(),merged); suppressSync=false;
+    showApp();
+    setSyncStatus("已同步");
+    if(!data.is_new && stableJson(merged)!==stableJson(normalizeState(data.state))) scheduleSync(50);
+  }catch(e){
+    console.error(e); error.textContent=navigator.onLine?"无法进入，请检查昵称、安全码或稍后重试":"当前离线，新设备首次进入需要联网";
+  }finally{btn.disabled=false;btn.textContent="进入我的行程 →";document.getElementById("pinInput").value="";}
+}
+function showApp(){
+  document.getElementById("splash").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("nicknameLabel").textContent=nickname;
+  document.getElementById("avatarChar").textContent=nickname[0].toUpperCase();
+  currentDay=guessToday(); renderAll(); switchTab("todo");
+}
+async function switchNickname(){
+  if(!confirm("切换用户？当前云端数据不会删除。"))return;
+  try{if(syncSession?.token)await rpc("leave_sync",{p_session_token:syncSession.token});}catch(e){}
+  localStorage.removeItem("xj_sync_session"); localStorage.removeItem("xj_trip_nickname");
+  syncSession=null; location.reload();
+}
+function scheduleSync(delay=500){
+  clearTimeout(syncTimer); setSyncStatus(navigator.onLine?"待同步":"离线·待同步",navigator.onLine?"syncing":"offline");
+  syncTimer=setTimeout(pushState,delay);
+}
+async function pushState(){
+  if(!syncSession||syncBusy)return;
+  if(!navigator.onLine){setSyncStatus("离线·待同步","offline");return;}
+  syncBusy=true; setSyncStatus("同步中","syncing");
+  try{
+    let local=getState();
+    let data=await rpc("put_sync_state",{p_session_token:syncSession.token,p_state:local,p_base_revision:syncRevision});
+    if(data.conflict){
+      const merged=mergeStates(local,data.state);
+      suppressSync=true;lsSet(sKey(),merged);suppressSync=false;
+      data=await rpc("put_sync_state",{p_session_token:syncSession.token,p_state:merged,p_base_revision:Number(data.revision)});
+      if(data.conflict)throw new Error("同步冲突，请重试");
+      renderAll(); showStatus("已合并其他设备的更新");
+    }
+    syncRevision=Number(data.revision); setSyncStatus("已同步");
+  }catch(e){console.error(e);setSyncStatus("同步失败·重试","error");}
+  finally{syncBusy=false;}
+}
+async function pullState(){
+  if(!syncSession||syncBusy||!navigator.onLine)return;
+  syncBusy=true;setSyncStatus("同步中","syncing");
+  try{
+    const data=await rpc("get_sync_state",{p_session_token:syncSession.token});
+    const merged=mergeStates(getState(),data.state);
+    suppressSync=true;lsSet(sKey(),merged);suppressSync=false;
+    syncRevision=Number(data.revision);renderAll();setSyncStatus("已同步");
+    if(stableJson(merged)!==stableJson(normalizeState(data.state)))scheduleSync(50);
+  }catch(e){console.error(e);setSyncStatus("同步失败·重试","error");}
+  finally{syncBusy=false;}
+}
+function manualSync(){syncBusy=false;pullState();}
+function init(){
+  syncSession=lsGet("xj_sync_session",null);
+  const saved=localStorage.getItem("xj_trip_nickname");
+  if(syncSession&&saved){
+    try{nickname=JSON.parse(saved)||syncSession.nickname;if(nickname){showApp();setSyncStatus(navigator.onLine?"同步中":"离线·待同步",navigator.onLine?"syncing":"offline");pullState();return;}}catch(e){}
+  }
+  currentDay=guessToday();
+}
+window.addEventListener("online",()=>{setSyncStatus("同步中","syncing");pullState();});
+window.addEventListener("offline",()=>setSyncStatus("离线·待同步","offline"));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pullState();});
 
 function guessToday() {
-  const start = new Date(2026, 8, 24);
-  const now = new Date();
-  const diff = Math.floor((now - start) / 86400000) + 1;
-  if (diff < 1) return 1;
-  if (diff > 9) return 9;
-  return diff;
+  const start=new Date(2026,8,24);
+  const diff=Math.floor((new Date()-start)/86400000)+1;
+  return Math.max(1,Math.min(9,diff));
 }
 
 // ============ Tab ============
