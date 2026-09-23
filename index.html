@@ -219,8 +219,11 @@
     cursor: pointer;
   }
   .hotel-row .h-name { font-weight: 600; font-size: 14.5px; }
+  .hotel-row .h-address { font-size: 12px; color: #6B6459; margin-top: 4px; line-height: 1.45; }
   .hotel-row .h-sub { font-size: 12px; color: #8A8378; margin-top: 2px; }
   .hotel-row .nav-arrow { color: #E8833A; font-size: 20px; }
+  .hotel-options { display: grid; gap: 10px; margin-top: 12px; }
+  .hotel-options .hotel-row { margin-top: 0; }
 
   .sub-section { margin-top: 16px; }
   .sub-section h4 { margin: 0 0 8px; font-size: 14px; color: #6B6459; }
@@ -335,11 +338,17 @@
   .category-error { margin: 6px 0 0; color: #B42318; font-size: 12px; }
   .empty-category { color: #8A8378; font-size: 13px; padding: 8px 0; }
   .weather-row {
-    margin-top: 10px; padding: 9px 11px; border-radius: 10px;
+    margin-top: 10px; padding: 12px; border-radius: 10px;
     background: #F8F3EB; color: #5F574D; font-size: 13px;
   }
-  .weather-row strong { color: #2D2A26; margin-right: 4px; }
+  .weather-row strong { color: #2D2A26; }
   .weather-row .pending { color: #8A8378; }
+  .weather-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .weather-refresh { border: 1px solid #E4C8A6; background: #fff; color: #B75B1D; border-radius: 999px; padding: 5px 10px; font-size: 12px; flex-shrink: 0; }
+  .weather-refresh:disabled { opacity: .6; cursor: wait; }
+  .weather-live { margin-top: 7px; color: #2D2A26; font-weight: 600; }
+  .weather-meta { margin-top: 3px; color: #8A8378; font-size: 11px; }
+  .weather-error { margin-top: 5px; color: #B42318; font-size: 12px; }
   #actionStatus {
     position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%);
     z-index: 30; width: max-content; max-width: calc(100% - 32px);
@@ -500,10 +509,10 @@ const DEFAULT_ITEMS = [
 // 行程数据（sections 按时间轴排列，poi 自动加高德定位）
 const TRIP_DAYS = [
   {
-    day: 1, date: "9月24日 周四", dateShort: "9.24", title: "各地 → 乌鲁木齐（活动集合日）",
+    day: 1, date: "9月24日 周四", dateISO: "2026-09-24", dateShort: "9.24", weatherCity: "650100", title: "各地 → 乌鲁木齐（活动集合日）",
     weather: { place: "乌鲁木齐", text: "多云 14–23℃", source: "天气预报·9月22日更新；出发前请再次确认" },
     drive: "自行前往集合酒店", meal: "全天自理",
-    hotel: "乌鲁木齐伊力特酒店", hotelKeyword: "87.594090,43.786743",
+    hotels: [{ name: "乌鲁木齐伊力特酒店", address: "乌鲁木齐市沙依巴克区长江路352号", location: "87.594090,43.786743" }],
     sections: [
       { time: "14:00–24:00", icon: "🏨", desc: "在乌鲁木齐伊力特酒店集合，报姓名办理入住", poi: "87.594090,43.786743", poiText: "乌鲁木齐伊力特酒店" },
       { time: "全天", icon: "🧳", desc: "各地自行抵达；同一订单2人及以上赠送一次接机/接站服务，出发前2天工作人员联系统计航班" },
@@ -511,10 +520,10 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 2, date: "9月25日 周五", dateShort: "9.25", title: "乌鲁木齐 → 赛里木湖",
+    day: 2, date: "9月25日 周五", dateISO: "2026-09-25", dateShort: "9.25", weatherCity: "652701", title: "乌鲁木齐 → 赛里木湖",
     weather: { place: "博乐（赛里木湖参考）", text: "多云转阴 13–23℃", source: "天气预报·9月22日更新；湖区体感更低、风更大" },
     drive: "全程高速前往赛里木湖", meal: "酒店赠早，正餐自理",
-    hotel: "湘疆假日酒店", hotelKeyword: "湘疆假日酒店 赛里木湖",
+    hotels: [{ name: "丽呈别院·湘疆假日（赛里木湖店）", address: "博乐市赛里木湖景区三台路2号（景区公安分局交警大队北250米）", location: "81.397870,44.604561" }],
     sections: [
       { time: "早餐后", icon: "🚌", desc: "从乌鲁木齐出发，全程高速前往赛里木湖" },
       { time: "抵达后", icon: "🌊", desc: "游览赛里木湖，正式行程游玩时间不少于30分钟", poi: "81.172193,44.604112", poiText: "赛里木湖" },
@@ -522,10 +531,10 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 3, date: "9月26日 周六", dateShort: "9.26", title: "赛里木湖 → 奎屯",
+    day: 3, date: "9月26日 周六", dateISO: "2026-09-26", dateShort: "9.26", weatherCity: "654003", title: "赛里木湖 → 奎屯",
     weather: { place: "奎屯", text: "多云 13–25℃", source: "天气预报·9月22日更新" },
     drive: "赛里木湖环湖后前往奎屯", meal: "酒店赠早，正餐自理",
-    hotel: "龙泽惠理酒店", hotelKeyword: "奎屯 龙泽惠理酒店",
+    hotels: [{ name: "龙泽惠理国际酒店（奎屯金泰广场店）", address: "奎屯市团结北街33号", location: "84.904112,44.444601" }],
     sections: [
       { time: "早餐后", icon: "🚐", desc: "赛里木湖总环湖游览，正式行程游玩时间不少于180分钟", poi: "81.172193,44.604112", poiText: "赛里木湖" },
       { time: "环湖期间", icon: "⛵", desc: "安排帆船游湖和下午茶体验，总体验时间不少于40分钟" },
@@ -533,10 +542,10 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 4, date: "9月27日 周日", dateShort: "9.27", title: "奎屯 → 布尔津",
+    day: 4, date: "9月27日 周日", dateISO: "2026-09-27", dateShort: "9.27", weatherCity: "654321", title: "奎屯 → 布尔津",
     weather: { place: "布尔津", text: "多云 7–20℃", source: "天气预报·9月22日更新" },
     drive: "经乌尔禾前往布尔津", meal: "酒店赠早，正餐自理",
-    hotel: "上士国际酒店", hotelKeyword: "86.882987,47.699565",
+    hotels: [{ name: "布尔津上士国际酒店", address: "布尔津县津东路430号", location: "86.882987,47.699565" }],
     sections: [
       { time: "早餐后", icon: "🍂", desc: "前往乌尔禾胡杨林，正式行程游玩时间不少于30分钟", poi: "85.687497,46.093451", poiText: "乌尔禾胡杨林" },
       { time: "之后", icon: "🏜", desc: "游览乌尔禾魔鬼城，正式行程游玩时间不少于60分钟", poi: "85.687497,46.093451", poiText: "乌尔禾魔鬼城" },
@@ -544,10 +553,13 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 5, date: "9月28日 周一", dateShort: "9.28", title: "布尔津 → 白哈巴",
+    day: 5, date: "9月28日 周一", dateISO: "2026-09-28", dateShort: "9.28", weatherCity: "654324", title: "布尔津 → 白哈巴",
     weather: { place: "哈巴河（白哈巴参考）", text: "多云 6–19℃", source: "天气预报·9月22日更新；山区夜间可能更低" },
     drive: "五彩滩后换乘景交车进入白哈巴", meal: "酒店赠早，含午餐，赠一顿晚餐（条件允许）",
-    hotel: "沐春山房民宿 / 将夜寻民宿", hotelKeyword: "白哈巴村 民宿",
+    hotels: [
+      { name: "沐春山房民宿（白哈巴村店）", address: "哈巴河县铁热克提乡白哈巴村双湖路37号", location: "86.780653,48.685719" },
+      { name: "白哈巴新村将夜寻民宿（白哈巴景区店）", address: "哈巴河县铁热克提乡白哈巴村双湖路38号", location: "86.780697,48.686197" }
+    ],
     sections: [
       { time: "早餐后", icon: "🎨", desc: "游览五彩滩，正式行程游玩时间不少于30分钟", poi: "86.869855,47.706654", poiText: "五彩滩" },
       { time: "之后", icon: "🚌", desc: "换乘景交车前往白哈巴，正式行程游玩时间不少于120分钟", poi: "86.787731,48.693566", poiText: "白哈巴村" },
@@ -555,10 +567,10 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 6, date: "9月29日 周二", dateShort: "9.29", title: "白哈巴 → 喀纳斯",
+    day: 6, date: "9月29日 周二", dateISO: "2026-09-29", dateShort: "9.29", weatherCity: "654321", title: "白哈巴 → 喀纳斯",
     weather: { place: "喀纳斯", text: "晴 5–17℃", source: "景区天气预报·9月22日更新；早晚注意保暖" },
     drive: "适时换乘景交车前往喀纳斯", meal: "酒店赠早，正餐自理",
-    hotel: "鲁班木屋", hotelKeyword: "喀纳斯 鲁班木屋",
+    hotels: [{ name: "喀纳斯鲁班木屋（哈纳斯新村店）", address: "布尔津县哈纳斯新村28号", location: "87.004561,48.691286" }],
     sections: [
       { time: "早餐后", icon: "🚌", desc: "适时离开白哈巴，换乘景交车前往喀纳斯" },
       { time: "抵达后", icon: "🏞", desc: "游览喀纳斯，正式行程游玩时间不少于180分钟", poi: "87.130853,48.507195", poiText: "喀纳斯景区" },
@@ -566,10 +578,14 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 7, date: "9月30日 周三", dateShort: "9.30", title: "喀纳斯 → 禾木",
+    day: 7, date: "9月30日 周三", dateISO: "2026-09-30", dateShort: "9.30", weatherCity: "654321", title: "喀纳斯 → 禾木",
     weather: { place: "禾木", text: "晴 4–16℃", source: "景区天气预报·9月22日更新；清晨体感可能接近0℃" },
     drive: "三湾游览后换乘景交车前往禾木", meal: "酒店赠早，正餐自理",
-    hotel: "萍水相逢客栈 / 林鑫客栈 / 万木春民宿", hotelKeyword: "禾木村 客栈",
+    hotels: [
+      { name: "萍水相逢客栈", address: "布尔津县禾木村围哈拉267号", location: "87.432649,48.569558" },
+      { name: "布尔津林鑫客栈", address: "布尔津县禾木村围哈拉255号（老桥头旁约100米）", location: "87.431672,48.566396" },
+      { name: "禾木万木春民宿（禾木风景区店）", address: "布尔津县禾木哈纳斯蒙古族乡禾木路83号", query: "禾木万木春民宿 禾木路83号" }
+    ],
     sections: [
       { time: "早餐后", icon: "🌫", desc: "游览喀纳斯三湾，正式行程总游玩时间不少于120分钟", poi: "喀纳斯三湾", poiText: "喀纳斯三湾" },
       { time: "适时", icon: "🚌", desc: "换乘景交车前往禾木，正式行程游玩时间不少于120分钟", poi: "87.441886,48.573570", poiText: "禾木村" },
@@ -577,10 +593,10 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 8, date: "10月1日 周四", dateShort: "10.1", title: "禾木 → 阿勒泰",
+    day: 8, date: "10月1日 周四", dateISO: "2026-10-01", dateShort: "10.1", weatherCity: "654301", title: "禾木 → 阿勒泰",
     weather: { place: "阿勒泰", text: "阴转雨 5–16℃", source: "天气预报·9月22日更新；关注降水变化" },
     drive: "经阿禾公路前往阿勒泰", meal: "酒店赠早，正餐自理",
-    hotel: "半山湾酒店", hotelKeyword: "阿勒泰 半山湾酒店",
+    hotels: [{ name: "阿勒泰半山湾书香心泊酒店", address: "阿勒泰市阿勒泰路26号", location: "88.119188,47.799953" }],
     sections: [
       { time: "早起", icon: "🌅", desc: "前往禾木观景台看日出晨雾", poi: "87.441886,48.573570", poiText: "禾木观景台" },
       { time: "适时", icon: "🛣", desc: "乘景交车离开禾木，走阿禾公路前往阿勒泰；如因天气或政策无法通行，则走省道，时间相近", poi: "88.303248,48.223628", poiText: "阿禾公路" },
@@ -588,10 +604,10 @@ const TRIP_DAYS = [
     ]
   },
   {
-    day: 9, date: "10月2日 周五", dateShort: "10.2", title: "阿勒泰 → 乌鲁木齐（全天解散日）",
+    day: 9, date: "10月2日 周五", dateISO: "2026-10-02", dateShort: "10.2", weatherCity: "650100", title: "阿勒泰 → 乌鲁木齐（全天解散日）",
     weather: { place: "乌鲁木齐", text: "阴 8–15℃", source: "天气预报·9月22日更新；长时效预报波动较大" },
     drive: "穿越古尔班通古特沙漠返回乌鲁木齐", meal: "酒店赠早，正餐自理",
-    hotel: null, hotelKeyword: null,
+    hotels: [],
     sections: [
       { time: "早餐后", icon: "🚌", desc: "从阿勒泰出发，穿越古尔班通古特沙漠，前往乌鲁木齐", poi: "86.629347,45.077328", poiText: "古尔班通古特沙漠" },
       { time: "抵达后", icon: "✈️", desc: "送乌鲁木齐机场、乌鲁木齐火车站或乌鲁木齐市区集合酒店，行程结束", poi: "87.594090,43.786743", poiText: "乌鲁木齐伊力特酒店" },
@@ -843,6 +859,10 @@ function switchTab(name) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById("page-" + name).classList.add("active");
   window.scrollTo(0, 0);
+  if (name === "trip") {
+    const day = TRIP_DAYS[currentDay - 1];
+    if (day && !readWeatherCache(day)) refreshWeather(day.day, true);
+  }
 }
 
 // ============ 待办渲染 ============
@@ -1241,11 +1261,58 @@ function renderTripTabs() {
     pill.className = "day-pill" + (d.day === currentDay ? " active" : "");
     if (d.day < todayGuess) pill.classList.add("passed");
     pill.textContent = "D" + d.day + " · " + d.dateShort;
-    pill.onclick = () => { currentDay = d.day; renderTripTabs(); renderTripDetail(); };
+    pill.onclick = () => { currentDay = d.day; renderTripTabs(); renderTripDetail(); if(!readWeatherCache(d))refreshWeather(d.day,true); };
     el.appendChild(pill);
   });
   const active = el.querySelector(".day-pill.active");
   if (active) active.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}
+
+const liveWeather = {};
+const weatherLoading = {};
+function weatherCacheKey(day) { return `xj_weather_${day.dateISO}_${day.weatherCity}`; }
+function readWeatherCache(day) {
+  const cached=lsGet(weatherCacheKey(day),null);
+  if(!cached||Date.now()-Number(cached.savedAt||0)>30*60*1000)return null;
+  return cached;
+}
+function weatherText(cast) {
+  if(!cast)return "";
+  const weather=cast.dayweather===cast.nightweather?cast.dayweather:`${cast.dayweather}转${cast.nightweather}`;
+  return `${weather} ${cast.nighttemp}–${cast.daytemp}℃`;
+}
+function renderWeatherComponent(day) {
+  const live=liveWeather[day.day]||readWeatherCache(day);
+  const cast=live?.casts?.find(item=>item.date===day.dateISO);
+  const loading=!!weatherLoading[day.day];
+  const rangeNote=live&&!cast?`高德当前仅返回 ${live.casts?.[0]?.date||"近期"} 起的短期预报，${day.date} 请临近后再查。`:"";
+  const error=liveWeather[day.day]?.error||"";
+  return `<div class="weather-row">
+    <div class="weather-head"><strong>天气 · ${escapeHtml(day.weather.place)}</strong><button type="button" class="weather-refresh" onclick="refreshWeather(${day.day})" ${loading?"disabled":""}>${loading?"查询中…":"刷新天气"}</button></div>
+    <div class="weather-live">${cast?escapeHtml(weatherText(cast)):escapeHtml(day.weather.text)}</div>
+    <div class="weather-meta">${cast?`高德天气 · ${escapeHtml(live.reporttime||"")} 更新`:`本地预报：${escapeHtml(day.weather.source||"待更新")}`}</div>
+    ${rangeNote?`<div class="weather-error">${escapeHtml(rangeNote)}</div>`:""}
+    ${error?`<div class="weather-error">${escapeHtml(error)}</div>`:""}
+  </div>`;
+}
+async function refreshWeather(dayNumber, silent=false) {
+  const day=TRIP_DAYS[dayNumber-1];
+  if(!day||weatherLoading[dayNumber])return;
+  weatherLoading[dayNumber]=true;
+  if(currentDay===dayNumber)renderTripDetail();
+  try{
+    const response=await fetch(`/.netlify/functions/weather?city=${encodeURIComponent(day.weatherCity)}`,{headers:{accept:"application/json"}});
+    const data=await response.json().catch(()=>null);
+    if(!response.ok||!data?.ok)throw new Error("实时天气暂时不可用，已保留本地预报");
+    const value={...data,savedAt:Date.now()};
+    liveWeather[dayNumber]=value;lsSet(weatherCacheKey(day),value);
+  }catch(error){
+    liveWeather[dayNumber]={...(readWeatherCache(day)||{}),error:error.message||"实时天气暂时不可用",savedAt:Date.now()};
+    if(!silent)showStatus("天气查询失败，继续显示本地预报");
+  }finally{
+    weatherLoading[dayNumber]=false;
+    if(currentDay===dayNumber)renderTripDetail();
+  }
 }
 
 function renderTripDetail() {
@@ -1261,15 +1328,16 @@ function renderTripDetail() {
   }).join("");
 
   let hotelHtml = "";
-  if (d.hotel) {
-    hotelHtml = `
-      <a class="hotel-row" target="_blank" href="${amapUrl(d.hotelKeyword, d.hotel)}">
+  if (d.hotels && d.hotels.length) {
+    hotelHtml = `<div class="hotel-options">${d.hotels.map((hotel, index) => `
+      <a class="hotel-row" target="_blank" href="${amapUrl(hotel.location || hotel.query || hotel.address, hotel.name)}">
         <div>
-          <div class="h-name">🏨 ${d.hotel}</div>
-          <div class="h-sub">点这里在高德打开</div>
+          <div class="h-name">🏨 ${d.hotels.length > 1 ? `备选${index + 1} · ` : ""}${escapeHtml(hotel.name)}</div>
+          <div class="h-address">${escapeHtml(hotel.address)}</div>
+          <div class="h-sub">${hotel.location ? "精确坐标 · 在高德打开" : "完整地址搜索 · 在高德打开"}</div>
         </div>
         <div class="nav-arrow">›</div>
-      </a>`;
+      </a>`).join("")}</div>`;
   }
 
   let dailyHtml = "";
@@ -1289,7 +1357,7 @@ function renderTripDetail() {
         <span>🚗 ${d.drive}</span>
         <span>🍽 ${d.meal}</span>
       </div>
-      <div class="weather-row"><strong>天气 · ${escapeHtml(d.weather.place)}</strong> <span class="${d.weather.pending ? "pending" : ""}">${escapeHtml(d.weather.text)}</span>${d.weather.source ? `<div>${escapeHtml(d.weather.source)}</div>` : `<div>出发前1–3天更新实际预报</div>`}</div>
+      ${renderWeatherComponent(d)}
     </div>
     <div class="card">
       <h3>今日行程</h3>
