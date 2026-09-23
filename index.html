@@ -395,9 +395,9 @@
     <div class="card accent" id="cat-meet">
       <h3>集合信息</h3>
       <div class="meet-info">
-        <p><span class="label">时间</span>2026.9.24（周四）14:00–24:00</p>
-        <p><span class="label">酒店</span><a class="jump-link" target="_blank" href="https://uri.amap.com/marker?position=87.594090,43.786743&name=%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90%E4%BC%8A%E5%8A%9B%E7%89%B9%E9%85%92%E5%BA%97&callnative=1">乌鲁木齐伊力特酒店</a></p>
-        <p><span class="label">入住</span>14:00–24:00 到店集合并办理入住</p>
+        <p><span class="label">时间</span>2026.9.24（周四）</p>
+        <p><span class="label">酒店</span><a class="jump-link" target="_blank" href="https://uri.amap.com/marker?position=87.586056,43.788315&name=%E4%BC%8A%E5%8A%9B%E7%89%B9%E9%85%92%E5%BA%97&callnative=1">伊力特酒店（火车南站德汇万达店）</a></p>
+        <p><span class="label">入住</span>14:00 后办理，早到可前台寄存行李</p>
         <p><span class="label">交通</span>机场打车约 35 分钟；或机场巴士 2 号线 9 站长江路站下步行 400 米</p>
         <p><span class="label">天气</span>9.24 乌鲁木齐 ⛅ 多云 14–23℃（出发前3天再查最新）</p>
       </div>
@@ -415,16 +415,30 @@
 
   <!-- Tab 3: 联系人 -->
   <div class="page" id="page-contact">
-    <div class="card" style="margin-top:8px;"><h3>正式行程联系人</h3><p style="margin:6px 0 0;color:#8A8378;font-size:12px;">电话已按正式行程单核对</p></div>
-    <div class="contact-card"><div class="contact-avatar">领</div><div class="contact-info"><div class="c-name">刘春艳</div><div class="c-role">领队</div><div class="c-phone">183 8240 8097</div></div><a class="call-btn" href="tel:18382408097" aria-label="拨打领队刘春艳">📞</a></div>
-    <div class="contact-card"><div class="contact-avatar">导</div><div class="contact-info"><div class="c-name">杨春霞</div><div class="c-role">导游</div><div class="c-phone">152 7663 3828</div></div><a class="call-btn" href="tel:15276633828" aria-label="拨打导游杨春霞">📞</a></div>
-    <div class="contact-card"><div class="contact-avatar">急</div><div class="contact-info"><div class="c-name">公司紧急联系人</div><div class="c-role">紧急情况</div><div class="c-phone">135 8819 0014</div></div><a class="call-btn" href="tel:13588190014" aria-label="拨打公司紧急联系人">📞</a></div>
-    <div class="contact-card"><div class="contact-avatar">诉</div><div class="contact-info"><div class="c-name">公司质监投诉</div><div class="c-role">服务质量反馈</div><div class="c-phone">177 5717 0129</div></div><a class="call-btn" href="tel:17757170129" aria-label="拨打公司质监投诉电话">📞</a></div>
-    <div class="contact-card"><div class="contact-avatar">保</div><div class="contact-info"><div class="c-name">保险理赔</div><div class="c-role">保险相关</div><div class="c-phone">177 6706 9346</div></div><a class="call-btn" href="tel:17767069346" aria-label="拨打保险理赔电话">📞</a></div>
-    <div class="contact-card"><div class="contact-avatar">组</div><div class="contact-info"><div class="c-name">沈瑜芳</div><div class="c-role">组团社联系人</div><div class="c-phone">158 5816 5013</div></div><a class="call-btn" href="tel:15858165013" aria-label="拨打组团社联系人沈瑜芳">📞</a></div>
-    <div class="contact-card"><div class="contact-avatar">地</div><div class="contact-info"><div class="c-name">麻枫园</div><div class="c-role">地接社联系人</div><div class="c-phone">189 9998 0338</div></div><a class="call-btn" href="tel:18999980338" aria-label="拨打地接社联系人麻枫园">📞</a></div>
-    <div class="emergency-tip">紧急情况优先联系领队，其次联系导游或公司紧急联系人</div>
+    <div class="card" style="margin-top:8px;"><h3>紧急联系</h3></div>
+    <div class="contact-card">
+      <div class="contact-avatar">👤</div>
+      <div class="contact-info">
+        <div class="c-name">春春</div>
+        <div class="c-role">领队</div>
+        <div class="c-phone">183 8240 8097</div>
+        <div class="c-hint">点右侧拨打 · 长按号码可复制</div>
+      </div>
+      <a class="call-btn" href="tel:18382408097">📞</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-avatar">👤</div>
+      <div class="contact-info">
+        <div class="c-name">喜洋洋</div>
+        <div class="c-role">导游</div>
+        <div class="c-phone">152 7663 3828</div>
+        <div class="c-hint">点右侧拨打 · 长按号码可复制</div>
+      </div>
+      <a class="call-btn" href="tel:15276633828">📞</a>
+    </div>
+    <div class="emergency-tip">紧急情况先打领队，再打导游</div>
   </div>
+
   <div class="tabbar">
     <div class="tab-item active" data-tab="todo" onclick="switchTab('todo')">
       <div class="icon">📋</div><div>待办</div>
@@ -500,102 +514,111 @@ const DEFAULT_ITEMS = [
 // 行程数据（sections 按时间轴排列，poi 自动加高德定位）
 const TRIP_DAYS = [
   {
-    day: 1, date: "9月24日 周四", dateShort: "9.24", title: "各地 → 乌鲁木齐（活动集合日）",
+    day: 1, date: "9.24 周四", title: "各地 → 乌鲁木齐（集合日）",
     weather: { place: "乌鲁木齐", text: "多云 14–23℃", source: "天气预报·9月22日更新；出发前请再次确认" },
-    drive: "自行前往集合酒店", meal: "全天自理",
-    hotel: "乌鲁木齐伊力特酒店", hotelKeyword: "87.594090,43.786743",
+    drive: "—", meal: "不含，三餐自理",
+    hotel: "伊力特酒店（乌鲁木齐4钻）", hotelKeyword: "87.586056,43.788315",
     sections: [
-      { time: "14:00–24:00", icon: "🏨", desc: "在乌鲁木齐伊力特酒店集合，报姓名办理入住", poi: "87.594090,43.786743", poiText: "乌鲁木齐伊力特酒店" },
-      { time: "全天", icon: "🧳", desc: "各地自行抵达；同一订单2人及以上赠送一次接机/接站服务，出发前2天工作人员联系统计航班" },
-      { time: "入住后", icon: "🌙", desc: "自由活动，注意人身与财产安全" }
+      { time: "全天", icon: "🛬", desc: "自行前往集合酒店，报「游侠客+姓名」办理入住；早到可先寄存行李" },
+      { time: "下午", icon: "🏛", desc: "时间充裕可逛", poi: "87.584246,43.819603", poiText: "新疆博物馆" },
+      { time: "晚上", icon: "🌃", desc: "国际大巴扎夜市逛吃：大盘鸡、烤羊排、烤羊肉串、伊犁马肠子", poi: "87.618840,43.780701", poiText: "国际大巴扎" }
     ]
   },
   {
-    day: 2, date: "9月25日 周五", dateShort: "9.25", title: "乌鲁木齐 → 赛里木湖",
+    day: 2, date: "9.25 周五", title: "乌鲁木齐 → 赛里木湖",
     weather: { place: "博乐（赛里木湖参考）", text: "多云转阴 13–23℃", source: "天气预报·9月22日更新；湖区体感更低、风更大" },
-    drive: "全程高速前往赛里木湖", meal: "酒店赠早，正餐自理",
-    hotel: "湘疆假日酒店", hotelKeyword: "湘疆假日酒店 赛里木湖",
+    drive: "约550km · 全程高速", meal: "含早，正餐自理",
+    hotel: "赛里木湖景区门口酒店", hotelKeyword: "81.172193,44.604112",
     sections: [
-      { time: "早餐后", icon: "🚌", desc: "从乌鲁木齐出发，全程高速前往赛里木湖" },
-      { time: "抵达后", icon: "🌊", desc: "游览赛里木湖，正式行程游玩时间不少于30分钟", poi: "81.172193,44.604112", poiText: "赛里木湖" },
-      { time: "适时", icon: "🏨", desc: "前往湘疆假日酒店办理入住" }
+      { time: "上午", icon: "🚌", desc: "早餐后出发，车上互相介绍破冰，沿高速前往赛里木湖" },
+      { time: "下午", icon: "🌊", desc: "抵达赛里木湖——「大西洋最后一滴眼泪」，湖面湛蓝，雪山环绕", poi: "81.172193,44.604112", poiText: "赛里木湖" },
+      { time: "傍晚", icon: "🌅", desc: "湖边守候日落晚霞；晴朗夜可观银河星空", poi: "81.172193,44.604112", poiText: "赛里木湖日落点" },
+      { time: "晚上", icon: "🏨", desc: "住赛里木湖景区门口稀缺资源酒店" }
     ]
   },
   {
-    day: 3, date: "9月26日 周六", dateShort: "9.26", title: "赛里木湖 → 奎屯",
+    day: 3, date: "9.26 周六", title: "赛里木湖 → 奎屯",
     weather: { place: "奎屯", text: "多云 13–25℃", source: "天气预报·9月22日更新" },
-    drive: "赛里木湖环湖后前往奎屯", meal: "酒店赠早，正餐自理",
-    hotel: "龙泽惠理酒店", hotelKeyword: "奎屯 龙泽惠理酒店",
+    drive: "约400km · 环湖路+高速", meal: "含早，正餐自理",
+    hotel: "奎屯龙泽惠理酒店同级（4钻）", hotelKeyword: "奎屯龙泽惠理酒店",
     sections: [
-      { time: "早餐后", icon: "🚐", desc: "赛里木湖总环湖游览，正式行程游玩时间不少于180分钟", poi: "81.172193,44.604112", poiText: "赛里木湖" },
-      { time: "环湖期间", icon: "⛵", desc: "安排帆船游湖和下午茶体验，总体验时间不少于40分钟" },
-      { time: "适时", icon: "🚌", desc: "离开赛里木湖，前往奎屯并入住酒店" }
+      { time: "上午", icon: "🚐", desc: "大巴车 360° 环湖，不同角度赏湖；幸运可见天鹅", poi: "81.172193,44.604112", poiText: "赛里木湖环湖" },
+      { time: "中午", icon: "⛵", desc: "帆船游湖（约30-40分钟）+ 湖畔下午茶，干果奶茶拍照" },
+      { time: "下午", icon: "🛣", desc: "游玩尽兴后离开，驱车前往奎屯" },
+      { time: "晚上", icon: "🏨", desc: "住奎屯市区4钻酒店" }
     ]
   },
   {
-    day: 4, date: "9月27日 周日", dateShort: "9.27", title: "奎屯 → 布尔津",
+    day: 4, date: "9.27 周日", title: "奎屯 → 乌尔禾 → 布尔津",
     weather: { place: "布尔津", text: "多云 7–20℃", source: "天气预报·9月22日更新" },
-    drive: "经乌尔禾前往布尔津", meal: "酒店赠早，正餐自理",
-    hotel: "上士国际酒店", hotelKeyword: "86.882987,47.699565",
+    drive: "约460km · 高速为主", meal: "含早，正餐自理",
+    hotel: "布尔津神湖酒店同级（4钻）", hotelKeyword: "布尔津神湖酒店",
     sections: [
-      { time: "早餐后", icon: "🍂", desc: "前往乌尔禾胡杨林，正式行程游玩时间不少于30分钟", poi: "85.687497,46.093451", poiText: "乌尔禾胡杨林" },
-      { time: "之后", icon: "🏜", desc: "游览乌尔禾魔鬼城，正式行程游玩时间不少于60分钟", poi: "85.687497,46.093451", poiText: "乌尔禾魔鬼城" },
-      { time: "适时", icon: "🚌", desc: "前往布尔津并入住上士国际酒店；胡杨林变色受气候影响，以现场为准" }
+      { time: "上午", icon: "🍂", desc: "早餐后出发，寻访「活着千年不死」的乌尔禾秘境胡杨林（私家踩线点）", poi: "85.687497,46.093451", poiText: "乌尔禾秘境胡杨林" },
+      { time: "下午", icon: "🏜", desc: "进入乌尔禾魔鬼城——《中国国家地理》最美雅丹，风蚀地貌", poi: "85.687497,46.093451", poiText: "乌尔禾魔鬼城" },
+      { time: "晚上", icon: "🏘", desc: "抵达俄罗斯风情小镇布尔津，自由结伴逛河堤夜市", poi: "86.869855,47.706654", poiText: "布尔津县城" }
     ]
   },
   {
-    day: 5, date: "9月28日 周一", dateShort: "9.28", title: "布尔津 → 白哈巴",
+    day: 5, date: "9.28 周一", title: "布尔津 → 五彩滩 → 白哈巴",
     weather: { place: "哈巴河（白哈巴参考）", text: "多云 6–19℃", source: "天气预报·9月22日更新；山区夜间可能更低" },
-    drive: "五彩滩后换乘景交车进入白哈巴", meal: "酒店赠早，含午餐，赠一顿晚餐（条件允许）",
-    hotel: "沐春山房民宿 / 将夜寻民宿", hotelKeyword: "白哈巴村 民宿",
+    drive: "约170km", meal: "含早，赠送一正餐",
+    hotel: "白哈巴景区内图瓦木屋", hotelKeyword: "白哈巴村",
     sections: [
-      { time: "早餐后", icon: "🎨", desc: "游览五彩滩，正式行程游玩时间不少于30分钟", poi: "86.869855,47.706654", poiText: "五彩滩" },
-      { time: "之后", icon: "🚌", desc: "换乘景交车前往白哈巴，正式行程游玩时间不少于120分钟", poi: "86.787731,48.693566", poiText: "白哈巴村" },
-      { time: "入住后", icon: "🏡", desc: "在工作人员带领下熟悉白哈巴村，之后自由活动；景区住宿可能分开入住2–3家" }
+      { time: "上午", icon: "🎨", desc: "游玩五彩滩，额尔齐斯河畔临水雅丹", poi: "86.869855,47.706654", poiText: "五彩滩" },
+      { time: "上午", icon: "🐑", desc: "途经呼吉尔特转场道，运气好可见成千上万牛羊转场" },
+      { time: "下午", icon: "🏔", desc: "西线铁热克提进白哈巴（不走回头路），沿中哈边境公路秋色", poi: "86.787731,48.693566", poiText: "白哈巴村（西北第一村）" },
+      { time: "傍晚", icon: "🌄", desc: "爬上村旁山坡看边陲晚霞；可去也根德空中草原打卡孤独的树" },
+      { time: "晚上", icon: "🌌", desc: "住图瓦木屋，满天繁星银河似练" }
     ]
   },
   {
-    day: 6, date: "9月29日 周二", dateShort: "9.29", title: "白哈巴 → 喀纳斯",
+    day: 6, date: "9.29 周二", title: "白哈巴 → 喀纳斯",
     weather: { place: "喀纳斯", text: "晴 5–17℃", source: "景区天气预报·9月22日更新；早晚注意保暖" },
-    drive: "适时换乘景交车前往喀纳斯", meal: "酒店赠早，正餐自理",
-    hotel: "鲁班木屋", hotelKeyword: "喀纳斯 鲁班木屋",
+    drive: "约60km · 景区公路", meal: "含早，正餐自理",
+    hotel: "喀纳斯景区内图瓦木屋", hotelKeyword: "喀纳斯景区",
     sections: [
-      { time: "早餐后", icon: "🚌", desc: "适时离开白哈巴，换乘景交车前往喀纳斯" },
-      { time: "抵达后", icon: "🏞", desc: "游览喀纳斯，正式行程游玩时间不少于180分钟", poi: "87.130853,48.507195", poiText: "喀纳斯景区" },
-      { time: "适时", icon: "🏨", desc: "入住喀纳斯鲁班木屋休息；景区住宿可能分开入住2–3家" }
+      { time: "清晨", icon: "🌫", desc: "习惯早起可自行前往村口观景台，看晨曦中白哈巴晨雾炊烟" },
+      { time: "上午", icon: "🏞", desc: "乘区间车离开白哈巴，前往「神的后花园」喀纳斯", poi: "87.130853,48.507195", poiText: "喀纳斯景区" },
+      { time: "下午", icon: "🚶", desc: "抵达换乘中心后换景交车至喀纳斯湖，沿湖滨栈道漫步", poi: "87.130853,48.507195", poiText: "喀纳斯湖" },
+      { time: "下午", icon: "⛰", desc: "登观鱼台俯瞰整个喀纳斯湖，天气好远眺友谊峰", poi: "87.130853,48.507195", poiText: "观鱼台" },
+      { time: "晚上", icon: "🏨", desc: "住喀纳斯景区内图瓦木屋（尊享团特有）" }
     ]
   },
   {
-    day: 7, date: "9月30日 周三", dateShort: "9.30", title: "喀纳斯 → 禾木",
+    day: 7, date: "9.30 周三", title: "喀纳斯 → 禾木",
     weather: { place: "禾木", text: "晴 4–16℃", source: "景区天气预报·9月22日更新；清晨体感可能接近0℃" },
-    drive: "三湾游览后换乘景交车前往禾木", meal: "酒店赠早，正餐自理",
-    hotel: "萍水相逢客栈 / 林鑫客栈 / 万木春民宿", hotelKeyword: "禾木村 客栈",
+    drive: "约60km · 景区公路", meal: "含早，正餐自理",
+    hotel: "禾木老村图瓦木屋（核心地段）", hotelKeyword: "禾木村",
     sections: [
-      { time: "早餐后", icon: "🌫", desc: "游览喀纳斯三湾，正式行程总游玩时间不少于120分钟", poi: "喀纳斯三湾", poiText: "喀纳斯三湾" },
-      { time: "适时", icon: "🚌", desc: "换乘景交车前往禾木，正式行程游玩时间不少于120分钟", poi: "87.441886,48.573570", poiText: "禾木村" },
-      { time: "入住后", icon: "🏡", desc: "工作人员带领熟悉禾木村，之后自由活动；景区住宿可能分开入住2–3家" }
+      { time: "清晨", icon: "🌫", desc: "早起前往神仙湾，邂逅梦幻晨雾（住景区内优势）", poi: "神仙湾", poiText: "神仙湾" },
+      { time: "上午", icon: "🚶", desc: "三湾轻徒步：月亮湾→卧龙湾约3km下坡；不想徒步可坐景交车", poi: "月亮湾", poiText: "月亮湾 · 卧龙湾" },
+      { time: "下午", icon: "🌳", desc: "换乘景交进入禾木村，禾木河畔白桦林自由漫步；可骑马去美丽峰", poi: "87.441886,48.573570", poiText: "禾木村" },
+      { time: "傍晚", icon: "🌇", desc: "登禾木日落观景台，看炊烟袅袅的图瓦村落", poi: "87.441886,48.573570", poiText: "禾木日落观景台" },
+      { time: "晚上", icon: "🌌", desc: "住禾木老村核心地段，夜可观星" }
     ]
   },
   {
-    day: 8, date: "10月1日 周四", dateShort: "10.1", title: "禾木 → 阿勒泰",
+    day: 8, date: "10.1 周四", title: "禾木 → 阿禾公路 → 阿勒泰",
     weather: { place: "阿勒泰", text: "阴转雨 5–16℃", source: "天气预报·9月22日更新；关注降水变化" },
-    drive: "经阿禾公路前往阿勒泰", meal: "酒店赠早，正餐自理",
-    hotel: "半山湾酒店", hotelKeyword: "阿勒泰 半山湾酒店",
+    drive: "约200km", meal: "含早，正餐自理",
+    hotel: "阿勒泰桔子水晶酒店同级（4钻）", hotelKeyword: "阿勒泰桔子水晶酒店",
     sections: [
-      { time: "早起", icon: "🌅", desc: "前往禾木观景台看日出晨雾", poi: "87.441886,48.573570", poiText: "禾木观景台" },
-      { time: "适时", icon: "🛣", desc: "乘景交车离开禾木，走阿禾公路前往阿勒泰；如因天气或政策无法通行，则走省道，时间相近", poi: "88.303248,48.223628", poiText: "阿禾公路" },
-      { time: "抵达后", icon: "🏨", desc: "入住阿勒泰半山湾酒店" }
+      { time: "清晨", icon: "🌅", desc: "趁日出前登哈登观景台，看禾木晨雾炊烟", poi: "87.441886,48.573570", poiText: "哈登观景台" },
+      { time: "上午", icon: "🛣", desc: "穿越阿禾公路208km边境公路（小独库），高山森林草原峡谷不断切换", poi: "88.303248,48.223628", poiText: "阿禾公路" },
+      { time: "下午", icon: "🦊", desc: "路上可能邂逅小狐狸；抵达阿勒泰入住酒店" },
+      { time: "晚上", icon: "⚠️", desc: "路上时间不确定性大，不建议买今晚航班离开" }
     ]
   },
   {
-    day: 9, date: "10月2日 周五", dateShort: "10.2", title: "阿勒泰 → 乌鲁木齐（全天解散日）",
+    day: 9, date: "10.2 周五", title: "阿勒泰 → 乌鲁木齐（解散）",
     weather: { place: "乌鲁木齐", text: "阴 8–15℃", source: "天气预报·9月22日更新；长时效预报波动较大" },
-    drive: "穿越古尔班通古特沙漠返回乌鲁木齐", meal: "酒店赠早，正餐自理",
+    drive: "约500km · 全程高速", meal: "含早，正餐自理",
     hotel: null, hotelKeyword: null,
     sections: [
-      { time: "早餐后", icon: "🚌", desc: "从阿勒泰出发，穿越古尔班通古特沙漠，前往乌鲁木齐", poi: "86.629347,45.077328", poiText: "古尔班通古特沙漠" },
-      { time: "抵达后", icon: "✈️", desc: "送乌鲁木齐机场、乌鲁木齐火车站或乌鲁木齐市区集合酒店，行程结束", poi: "87.594090,43.786743", poiText: "乌鲁木齐伊力特酒店" },
-      { time: "解散", icon: "🧳", desc: "也可在阿勒泰半山湾酒店解散；正式单未给固定抵达钟点，请按领队通知安排返程" }
+      { time: "上午", icon: "🏜", desc: "早餐后出发（早餐可能打包），穿越古尔班通古特沙漠", poi: "86.629347,45.077328", poiText: "古尔班通古特沙漠" },
+      { time: "下午", icon: "🚌", desc: "预计 15:00 抵达乌鲁木齐，先后送机场、火车站、市区酒店", poi: "87.586056,43.788315", poiText: "乌鲁木齐" },
+      { time: "提示", icon: "✈️", desc: "请订 17:00 之后的机票/火车；也可选择阿勒泰机场直接离团飞走" }
     ]
   }
 ];
@@ -1240,7 +1263,7 @@ function renderTripTabs() {
     const pill = document.createElement("div");
     pill.className = "day-pill" + (d.day === currentDay ? " active" : "");
     if (d.day < todayGuess) pill.classList.add("passed");
-    pill.textContent = "D" + d.day + " · " + d.dateShort;
+    pill.textContent = "D" + d.day;
     pill.onclick = () => { currentDay = d.day; renderTripTabs(); renderTripDetail(); };
     el.appendChild(pill);
   });
@@ -1284,7 +1307,7 @@ function renderTripDetail() {
 
   el.innerHTML = `
     <div class="card trip-header">
-      <h2>D${d.day} · ${d.date} · ${d.title}</h2>
+      <h2>D${d.day} · ${d.title}</h2>
       <div class="trip-meta">
         <span>🚗 ${d.drive}</span>
         <span>🍽 ${d.meal}</span>
